@@ -2,34 +2,26 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
-
 class Home extends BaseController
 {
     public function index()
     {
-        $data = [
-            'title' => 'Welcome to LMS',
-            'page' => 'home'
-        ];
-        return view('index', $data);
+        return view('index', [
+            'title' => 'Welcome to ITE311 Learning Management System'
+        ]);
     }
 
     public function about()
     {
-        $data = [
-            'title' => 'About Us',
-            'page' => 'about'
-        ];
-        return view('about', $data);
+        return view('about', [
+            'title' => 'About Us'
+        ]);
     }
 
     public function contact()
     {
-        $data = [
-            'title' => 'Contact Us',
-            'page' => 'contact'
-        ];
-        return view('contact', $data);
+        return view('contact', [
+            'title' => 'Contact Us'
+        ]);
     }
 }

@@ -41,4 +41,14 @@ class Validation extends BaseConfig
     // --------------------------------------------------------------------
     // Rules
     // --------------------------------------------------------------------
+
+    /**
+     * Custom validation rules for unique values
+     */
+    public array $customRules = [
+        'is_unique' => [
+            'users.username' => 'This username is already taken.',
+            'users.email' => 'This email is already registered.',
+        ],
+    ];
 }

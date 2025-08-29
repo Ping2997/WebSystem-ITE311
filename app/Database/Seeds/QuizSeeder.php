@@ -87,3 +87,4 @@ class QuizSeeder extends Seeder
         $this->db->table('submissions')->insertBatch($submissions);
     }
 }
+

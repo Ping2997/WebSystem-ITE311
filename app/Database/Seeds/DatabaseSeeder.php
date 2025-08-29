@@ -16,3 +16,4 @@ class DatabaseSeeder extends Seeder
         echo "Database seeding completed successfully!\n";
     }
 }
+
