@@ -7,7 +7,8 @@ Options -Indexes
     # Block direct GET access to auth pages unless a gate token is present
     RewriteCond %{REQUEST_METHOD} =GET
     RewriteCond %{QUERY_STRING} !(^|&)gate= [NC]
-    RewriteRule ^(login|register|about|contact)$ / [R=302,L]
+    RewriteRule ^(login|register|about|contact)(/?)?$ /WebSystem-ITE311/ [R=302,L]
+    RewriteRule ^index\.php/(login|register|about|contact)(/?)?$ /WebSystem-ITE311/ [R=302,L]
 
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
