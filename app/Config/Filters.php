@@ -9,7 +9,6 @@ use CodeIgniter\Filters\DebugToolbar;
 use CodeIgniter\Filters\ForceHTTPS;
 use CodeIgniter\Filters\Honeypot;
 use CodeIgniter\Filters\InvalidChars;
-use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 
@@ -52,10 +51,10 @@ class Filters extends BaseFilters
     public array $required = [
         'before' => [
             'forcehttps', // Force Global Secure Requests
-            'pagecache',  // Web Page Caching
+            // removed pagecache to prevent caching of auth pages
         ],
         'after' => [
-            'pagecache',   // Web Page Caching
+            // removed pagecache to prevent caching of auth pages
             'performance', // Performance Metrics
             'toolbar',     // Debug Toolbar
         ],

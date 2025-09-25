@@ -10,7 +10,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/">
+            <a class="navbar-brand" href="<?= base_url() ?>">
                 <i class="fas fa-graduation-cap me-2"></i>ITE311 LMS
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -19,17 +19,17 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="/">
+                        <a class="nav-link active" href="<?= base_url() ?>">
                             <i class="fas fa-home me-1"></i>Home
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/about">
+                        <a class="nav-link" href="<?= base_url('about') . '?gate=' . urlencode($gate ?? '') ?>">
                             <i class="fas fa-info-circle me-1"></i>About
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/contact">
+                        <a class="nav-link" href="<?= base_url('contact') . '?gate=' . urlencode($gate ?? '') ?>">
                             <i class="fas fa-envelope me-1"></i>Contact
                         </a>
                     </li>
@@ -41,19 +41,19 @@
                                 <i class="fas fa-user me-1"></i><?= session()->get('first_name') ?>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                                <li><a class="dropdown-item" href="<?= base_url('dashboard') ?>"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                                <li><a class="dropdown-item" href="<?= base_url('logout') ?>"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                             </ul>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="/login">
+                            <a class="nav-link" href="<?= base_url('login') . '?gate=' . urlencode($gate ?? '') ?>">
                                 <i class="fas fa-sign-in-alt me-1"></i>Login
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/register">
+                            <a class="nav-link" href="<?= base_url('register') . '?gate=' . urlencode($gate ?? '') ?>">
                                 <i class="fas fa-user-plus me-1"></i>Register
                             </a>
                         </li>
@@ -92,12 +92,12 @@
                 <?php if (!session()->get('is_logged_in')): ?>
                     <div class="row justify-content-center">
                         <div class="col-md-4 mb-3">
-                            <a href="/register" class="btn btn-primary btn-lg w-100">
+                            <a href="<?= base_url('register') . '?gate=' . urlencode($gate ?? '') ?>" class="btn btn-primary btn-lg w-100">
                                 <i class="fas fa-user-plus me-2"></i>Get Started
                             </a>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <a href="/login" class="btn btn-outline-primary btn-lg w-100">
+                            <a href="<?= base_url('login') . '?gate=' . urlencode($gate ?? '') ?>" class="btn btn-outline-primary btn-lg w-100">
                                 <i class="fas fa-sign-in-alt me-2"></i>Sign In
                             </a>
                         </div>
@@ -105,7 +105,7 @@
                 <?php else: ?>
                     <div class="row justify-content-center">
                         <div class="col-md-6">
-                            <a href="/dashboard" class="btn btn-success btn-lg w-100">
+                            <a href="<?= base_url('dashboard') ?>" class="btn btn-success btn-lg w-100">
                                 <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
                             </a>
                         </div>

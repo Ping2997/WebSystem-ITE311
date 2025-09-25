@@ -30,7 +30,7 @@
                             </div>
                         <?php endif; ?>
 
-                        <?= form_open('/login', ['class' => 'needs-validation', 'novalidate' => '']) ?>
+                        <?= form_open('login', ['class' => 'needs-validation', 'novalidate' => '']) ?>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email Address</label>
                                 <div class="input-group">
@@ -63,7 +63,7 @@
                         <?= form_close() ?>
                     </div>
                     <div class="card-footer text-center">
-                        <p class="mb-0">Don't have an account? <a href="/register" class="text-decoration-none">Register here</a></p>
+                        <p class="mb-0">Don't have an account? <a href="<?= base_url() ?>" class="text-decoration-none">Go to homepage</a></p>
                     </div>
                 </div>
             </div>

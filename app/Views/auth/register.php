@@ -75,7 +75,7 @@
                         </form>
                     </div>
                     <div class="card-footer text-center">
-                        <p class="mb-0">Already have an account? <a href="/login" class="text-decoration-none">Login here</a></p>
+                        <p class="mb-0">Already have an account? <a href="<?= base_url() ?>" class="text-decoration-none">Go to homepage</a></p>
                     </div>
                 </div>
             </div>

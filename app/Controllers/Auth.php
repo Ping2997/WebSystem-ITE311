@@ -14,6 +14,22 @@ class Auth extends BaseController
 
     public function register()
     {
+        // Gate: On any GET enforce either a valid gate token or a homepage referrer
+        if ($this->request->getMethod() === 'get') {
+            $provided = $this->request->getGet('gate');
+            $ref = $this->request->getHeaderLine('Referer');
+            $home = rtrim(base_url('/'), '/');
+
+            // Allow only if gate is present and (matches session when available), OR referer is the homepage
+            $expected = session()->get('home_gate');
+            $gateValid = $provided && (!$expected || hash_equals($expected, $provided));
+            $fromHome  = $ref && (stripos($ref, $home) === 0);
+
+            if (!($gateValid || $fromHome)) {
+                return redirect()->to('/');
+            }
+        }
+
         // Add debugging
         $method = $this->request->getMethod();
         $postData = $this->request->getPost();
@@ -35,7 +51,8 @@ class Auth extends BaseController
             if (!$this->validate($rules)) {
                 return view('auth/register', [
                     'validation' => $this->validator,
-                    'title' => 'Register'
+                    'title' => 'Register',
+                    'gate'  => $this->request->getGet('gate') ?? '',
                 ]);
             }
 
@@ -59,7 +76,8 @@ class Auth extends BaseController
             $builder = $this->db->table('users');
             if ($builder->insert($userData)) {
                 session()->setFlashdata('success', 'Registration successful! Please login.');
-                return redirect()->to('/login');
+                // Redirect to home; login page requires gate from home
+                return redirect()->to('/');
             } else {
                 session()->setFlashdata('error', 'Registration failed. Please try again.');
             }
@@ -67,12 +85,26 @@ class Auth extends BaseController
 
         return view('auth/register', [
             'validation' => $this->validator ?? null,
-            'title' => 'Register'
+            'title' => 'Register',
+            'gate'  => $this->request->getGet('gate') ?? '',
         ]);
     }
 
     public function login()
     {
+        // Gate: On any GET without a gate param, redirect to homepage immediately
+        if ($this->request->getMethod() === 'get') {
+            $provided = $this->request->getGet('gate');
+            if (!$provided) {
+                return redirect()->to('/');
+            }
+            // Optional: also verify against session token when present
+            $expected = session()->get('home_gate');
+            if ($expected && !hash_equals($expected, $provided)) {
+                return redirect()->to('/');
+            }
+        }
+
         if ($this->request->getMethod() === 'POST') {
             $rules = [
                 'username' => 'required',
@@ -82,7 +114,8 @@ class Auth extends BaseController
             if (!$this->validate($rules)) {
                 return view('auth/login', [
                     'validation' => $this->validator,
-                    'title' => 'Login'
+                    'title' => 'Login',
+                    'gate'  => $this->request->getGet('gate') ?? '',
                 ]);
             }
 
@@ -115,7 +148,8 @@ class Auth extends BaseController
 
         return view('auth/login', [
             'validation' => $this->validator ?? null,
-            'title' => 'Login'
+            'title' => 'Login',
+            'gate'  => $this->request->getGet('gate') ?? '',
         ]);
     }
 
