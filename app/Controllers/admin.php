@@ -3,11 +3,11 @@
 namespace App\Controllers;
 
 class Admin extends BaseController
-{
+{ 
     public function dashboard()
     {
         // Must be logged in
-        if (!session()->get('isLoggedIn')) {
+        if  (!session () ->get('isLoggedIn')) {
             session()->setFlashdata('error', 'Please Login first.');
             return redirect()->to(base_url('login'));
         }
@@ -26,5 +26,5 @@ class Admin extends BaseController
                 'role'  => session('role'),
             ]
         ]);
-    }
+        }
 }

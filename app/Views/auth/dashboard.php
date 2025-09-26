@@ -57,13 +57,13 @@
 
       switch ($role) {
         case 'admin':
-          echo view('admin', ['name' => $name]);
+          echo view('tempates/admin', ['name' => $name]);
           break;
         case 'teacher':
-          echo view('teacher', ['name' => $name]);
+          echo view('tempates/teacher', ['name' => $name]);
           break;
         case 'student':
-          echo view('student', ['name' => $name]);
+          echo view('tempates/student', ['name' => $name]);
           break;
         default:
           echo '<div class="alert alert-warning mt-3">Role not recognized.</div>';
