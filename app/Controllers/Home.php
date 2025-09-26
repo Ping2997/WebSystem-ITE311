@@ -6,9 +6,12 @@ class Home extends BaseController
 {
     public function index()
     {
-        // Generate a gate token to restrict direct access to auth pages
-        $token = bin2hex(random_bytes(16));
-        session()->set('home_gate', $token);
+        // Ensure a gate token exists and pass it to the view
+        $token = session()->get('home_gate');
+        if (!$token) {
+            $token = bin2hex(random_bytes(16));
+            session()->set('home_gate', $token);
+        }
 
         return view('index', [
             'title' => 'Welcome to ITE311 Learning Management System',
@@ -18,19 +21,7 @@ class Home extends BaseController
 
     public function about()
     {
-        // Gate: allow only when arriving from homepage or with gate token
-        if ($this->request->getMethod() === 'get') {
-            $provided = $this->request->getGet('gate');
-            $ref = $this->request->getHeaderLine('Referer');
-            $home = rtrim(base_url('/'), '/');
-            $expected = session()->get('home_gate');
-            $gateValid = $provided && (!$expected || hash_equals($expected, $provided));
-            $fromHome  = $ref && (stripos($ref, $home) === 0);
-            if (!($gateValid || $fromHome)) {
-                return redirect()->to('/');
-            }
-        }
-        // Ensure a gate token exists and pass it to the view for links
+        // Reuse or create gate token and pass standard data
         $token = session()->get('home_gate');
         if (!$token) {
             $token = bin2hex(random_bytes(16));
@@ -45,19 +36,7 @@ class Home extends BaseController
 
     public function contact()
     {
-        // Gate: allow only when arriving from homepage or with gate token
-        if ($this->request->getMethod() === 'get') {
-            $provided = $this->request->getGet('gate');
-            $ref = $this->request->getHeaderLine('Referer');
-            $home = rtrim(base_url('/'), '/');
-            $expected = session()->get('home_gate');
-            $gateValid = $provided && (!$expected || hash_equals($expected, $provided));
-            $fromHome  = $ref && (stripos($ref, $home) === 0);
-            if (!($gateValid || $fromHome)) {
-                return redirect()->to('/');
-            }
-        }
-        // Ensure a gate token exists and pass it to the view for links
+        // Reuse or create gate token and pass standard data
         $token = session()->get('home_gate');
         if (!$token) {
             $token = bin2hex(random_bytes(16));
