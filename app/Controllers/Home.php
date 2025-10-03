@@ -6,45 +6,55 @@ class Home extends BaseController
 {
     public function index()
     {
-        // Ensure a gate token exists and pass it to the view
-        $token = session()->get('home_gate');
-        if (!$token) {
-            $token = bin2hex(random_bytes(16));
-            session()->set('home_gate', $token);
-        }
+        // Mark that user has visited homepage in this session (one-time, short-lived)
+        session()->set('from_home', true);
+        session()->set('from_home_time', time());
 
-        return view('index', [
+        return view('tempates/index', [
             'title' => 'Welcome to ITE311 Learning Management System',
-            'gate'  => $token,
         ]);
     }
 
     public function about()
     {
-        // Reuse or create gate token and pass standard data
-        $token = session()->get('home_gate');
-        if (!$token) {
-            $token = bin2hex(random_bytes(16));
-            session()->set('home_gate', $token);
+        // Enforce: must come from homepage very recently (one-time)
+        if (!session()->get('from_home')) {
+            return redirect()->to(base_url('/'));
         }
-        return view('about', [
+        $fromTime = (int) (session()->get('from_home_time') ?? 0);
+        if ($fromTime === 0 || (time() - $fromTime) > 15) {
+            session()->remove('from_home');
+            session()->remove('from_home_time');
+            return redirect()->to(base_url('/'));
+        }
+        // Consume flags so the page cannot be reloaded directly
+        session()->remove('from_home');
+        session()->remove('from_home_time');
+
+        return view('tempates/about', [
             'title' => 'About Us',
-            'gate'  => $token,
             'page'  => 'about',
         ]);
     }
 
     public function contact()
     {
-        // Reuse or create gate token and pass standard data
-        $token = session()->get('home_gate');
-        if (!$token) {
-            $token = bin2hex(random_bytes(16));
-            session()->set('home_gate', $token);
+        // Enforce: must come from homepage very recently (one-time)
+        if (!session()->get('from_home')) {
+            return redirect()->to(base_url('/'));
         }
-        return view('contact', [
+        $fromTime = (int) (session()->get('from_home_time') ?? 0);
+        if ($fromTime === 0 || (time() - $fromTime) > 15) {
+            session()->remove('from_home');
+            session()->remove('from_home_time');
+            return redirect()->to(base_url('/'));
+        }
+        // Consume flags so the page cannot be reloaded directly
+        session()->remove('from_home');
+        session()->remove('from_home_time');
+
+        return view('tempates/contact', [
             'title' => 'Contact Us',
-            'gate'  => $token,
             'page'  => 'contact',
         ]);
     }

@@ -42,12 +42,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('about') . '?gate=' . urlencode($gate ?? '') ?>">
+                        <a class="nav-link" href="<?= base_url('about') ?>">
                             <i class="fas fa-info-circle me-1"></i>About
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('contact') . '?gate=' . urlencode($gate ?? '') ?>">
+                        <a class="nav-link" href="<?= base_url('contact') ?>">
                             <i class="fas fa-envelope me-1"></i>Contact
                         </a>
                     </li>

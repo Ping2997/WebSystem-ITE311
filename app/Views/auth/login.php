@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - ITE311-LABASA</title>
+  <title>Login</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     :root {
@@ -34,18 +34,18 @@
   <!-- Top Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark theme-navbar">
     <div class="container">
-      <a class="navbar-brand" href="<?= base_url() . '?gate=' . urlencode($gate ?? '') ?>">ITE311 LMS</a>
+      <a class="navbar-brand" href="<?= base_url() ?>">ITE311 LMS</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
-          <li class="nav-item"><a class="nav-link" href="<?= base_url() . '?gate=' . urlencode($gate ?? '') ?>">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?= base_url('about') . '?gate=' . urlencode($gate ?? '') ?>">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?= base_url('contact') . '?gate=' . urlencode($gate ?? '') ?>">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= base_url() ?>">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= base_url('about') ?>">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= base_url('contact') ?>">Contact</a></li>
         </ul>
         <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link active" href="<?= base_url('login') . '?gate=' . urlencode($gate ?? '') ?>">Log in</a></li>
+          <li class="nav-item"><a class="nav-link active" href="<?= base_url('login') ?>">Log in</a></li>
         </ul>
       </div>
     </div>
@@ -70,7 +70,7 @@
               <div class="alert alert-danger"><?= $validation->listErrors() ?></div>
           <?php endif; ?>
 
-          <form action="<?= base_url('login') . '?gate=' . urlencode($gate ?? '') ?>" method="post">
+          <form action="<?= base_url('login') ?>" method="post">
               <div class="mb-3">
                   <label>Username</label>
                   <input type="text" name="username" class="form-control" value="<?= old('username') ?>">
@@ -83,7 +83,7 @@
           </form>
 
           <div class="register-link">
-            <p class="mt-3">Don't have an account? <a href="<?= base_url('register') . '?gate=' . urlencode($gate ?? '') ?>">Register here</a></p>
+            <p class="mt-3">Don't have an account? <a href="<?= base_url('register') ?>">Register here</a></p>
           </div>
 
         </div>

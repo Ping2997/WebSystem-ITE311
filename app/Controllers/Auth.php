@@ -73,7 +73,19 @@ class Auth extends BaseController
             }
         }
 
-        // Display registration form
+        // GET: must come from homepage very recently (one-time)
+        if (!session()->get('from_home')) {
+            return redirect()->to(base_url('/'));
+        }
+        $fromTime = (int) (session()->get('from_home_time') ?? 0);
+        if ($fromTime === 0 || (time() - $fromTime) > 15) {
+            session()->remove('from_home');
+            session()->remove('from_home_time');
+            return redirect()->to(base_url('/'));
+        }
+        // consume flags so direct reload won't work
+        session()->remove('from_home');
+        session()->remove('from_home_time');
         return view('auth/register');
     }
 
@@ -149,7 +161,19 @@ class Auth extends BaseController
             }
         }
 
-        // Display login form
+        // GET: must come from homepage very recently (one-time)
+        if (!session()->get('from_home')) {
+            return redirect()->to(base_url('/'));
+        }
+        $fromTime = (int) (session()->get('from_home_time') ?? 0);
+        if ($fromTime === 0 || (time() - $fromTime) > 15) {
+            session()->remove('from_home');
+            session()->remove('from_home_time');
+            return redirect()->to(base_url('/'));
+        }
+        // consume flags so direct reload won't work
+        session()->remove('from_home');
+        session()->remove('from_home_time');
         return view('auth/login');
     }
 
@@ -160,7 +184,7 @@ class Auth extends BaseController
         
         // Set logout message and redirect
         session()->setFlashdata('success', 'You have been logged out successfully.');
-        return redirect()->to(base_url('login'));
+        return redirect()->to(base_url('/'));
     }
 
     public function dashboard()
