@@ -138,20 +138,8 @@ class Auth extends BaseController
                     // Regenerate session ID to prevent session fixation
                     session()->regenerate();
 
-                    // Redirect based on role
-                    switch ($user['role']) {
-                        case 'admin':
-                            return redirect()->to(base_url('admin/dashboard'));
-                        case 'teacher':
-                            return redirect()->to(base_url('teacher/dashboard'));
-                        case 'student':
-                            return redirect()->to(base_url('student/dashboard'));
-                        default:
-                            // Unknown role: clear session and go back to login
-                            session()->destroy();
-                            session()->setFlashdata('error', 'Your account role is not recognized.');
-                            return redirect()->to(base_url('login'));
-                    }
+                    // Single dashboard route (view handles role-specific UI)
+                    return redirect()->to(base_url('dashboard'));
                 } else {
                     session()->setFlashdata('error', 'Invalid username/email or password, or account is inactive.');
                 }
@@ -200,6 +188,7 @@ class Auth extends BaseController
             'user' => [
                 'name' => session()->get('name'),
                 'email' => session()->get('email'),
+                'role' => session()->get('role'),
             ]
         ];
 
