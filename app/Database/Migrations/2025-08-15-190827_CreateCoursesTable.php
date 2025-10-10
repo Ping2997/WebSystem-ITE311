@@ -32,15 +32,6 @@ class CreateCoursesTable extends Migration
                 'type'       => 'VARCHAR',
                 'constraint' => 100,
             ],
-            'level' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 20,
-                'default'    => 'beginner',
-            ],
-            'duration' => [
-                'type'       => 'INT',
-                'constraint' => 11,
-            ],
             'status' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 20,

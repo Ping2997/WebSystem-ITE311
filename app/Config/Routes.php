@@ -20,3 +20,5 @@ $routes->get('/auth/getUser', 'Auth::getUser');
 // Roles dashboard routes
 $routes->get('/dashboard', 'Auth::dashboard');
 
+// Course enrollment routes
+$routes->post('/course/enroll', 'Course::enroll');

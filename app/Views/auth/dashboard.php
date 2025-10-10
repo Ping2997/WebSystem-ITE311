@@ -63,7 +63,11 @@
           echo view('tempates/teacher', ['name' => $name]);
           break;
         case 'student':
-          echo view('tempates/student', ['name' => $name]);
+          echo view('tempates/student', [
+            'name' => $name,
+            'enrolledCourses' => $enrolledCourses ?? ($data['enrolledCourses'] ?? ($user['enrolledCourses'] ?? [])),
+            'availableCourses' => $availableCourses ?? ($data['availableCourses'] ?? ($user['availableCourses'] ?? [])),
+          ]);
           break;
         default:
           echo '<div class="alert alert-warning mt-3">Role not recognized.</div>';

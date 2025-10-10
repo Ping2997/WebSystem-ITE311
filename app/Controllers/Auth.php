@@ -183,7 +183,7 @@ class Auth extends BaseController
             return redirect()->to(base_url('login'));
         }
 
-        // User is logged in, show dashboard
+        // Base user data
         $data = [
             'user' => [
                 'name' => session()->get('name'),
@@ -191,6 +191,14 @@ class Auth extends BaseController
                 'role' => session()->get('role'),
             ]
         ];
+
+        // If student, load courses for the dashboard
+        if (session()->get('role') === 'student') {
+            $userId = (int) (session()->get('userID') ?? 0);
+            $enrollModel = new \App\Models\EnrollmentModel();
+            $data['enrolledCourses'] = $enrollModel->getUserEnrollmentsDetailed($userId);
+            $data['availableCourses'] = $enrollModel->getAvailableCourses($userId);
+        }
 
         return view('auth/dashboard', $data);
     }
