@@ -126,22 +126,30 @@ class Auth extends BaseController
                 if ($user && ($user['status'] ?? 'active') === 'active' && password_verify($password, $user['password'])) {
                     // Create user session
                     $sessionData = [
-                        'userID' => $user['id'],
-                        'name' => $user['username'], // keep compatibility with views expecting name
+                        'userID'   => $user['id'],
+                        'name'     => $user['username'],
                         'username' => $user['username'],
-                        'email' => $user['email'],
-                        'role' => $user['role'],
-                        'isLoggedIn' => true
+                        'email'    => $user['email'],
+                        'role'     => $user['role'],
+                        'isLoggedIn' => true,
                     ];
                     session()->set($sessionData);
 
                     // Regenerate session ID to prevent session fixation
                     session()->regenerate();
 
-                    // Single dashboard route (view handles role-specific UI)
-                    return redirect()->to(base_url('dashboard'));
+                    // Role-based redirection (Task 3)
+                    $role = strtolower((string) ($user['role'] ?? 'student'));
+                    if ($role === 'teacher') {
+                        return redirect()->to(base_url('teacher/dashboard'));
+                    } elseif ($role === 'admin') {
+                        return redirect()->to(base_url('admin/dashboard'));
+                    } else {
+                        return redirect()->to(base_url('announcements'));
+                    }
                 } else {
                     session()->setFlashdata('error', 'Invalid username/email or password, or account is inactive.');
+                    return redirect()->to(base_url('login'))->withInput();
                 }
             } else {
                 session()->setFlashdata('error', 'Please fix the errors below.');
@@ -149,19 +157,7 @@ class Auth extends BaseController
             }
         }
 
-        // GET: must come from homepage very recently (one-time)
-        if (!session()->get('from_home')) {
-            return redirect()->to(base_url('/'));
-        }
-        $fromTime = (int) (session()->get('from_home_time') ?? 0);
-        if ($fromTime === 0 || (time() - $fromTime) > 15) {
-            session()->remove('from_home');
-            session()->remove('from_home_time');
-            return redirect()->to(base_url('/'));
-        }
-        // consume flags so direct reload won't work
-        session()->remove('from_home');
-        session()->remove('from_home_time');
+        // GET: simply render login view
         return view('auth/login');
     }
 

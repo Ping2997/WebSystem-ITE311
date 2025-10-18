@@ -1,5 +1,7 @@
-<div class="container py-4">
-  <h3 class="mb-3 text-muted text-green">Admin Dashboard</h3>
+<?= $this->extend('tempates/template') ?>
+
+<?= $this->section('content') ?>
+  <h3 class="mb-3 text-muted">Admin Dashboard</h3>
   <p>Welcome, <?= esc($name) ?>!</p>
 
   <div class="row g-3">
@@ -27,4 +29,4 @@
       <p class="text-muted mb-0">No recent activity to show.</p>
     </div>
   </div>
-</div>
+<?= $this->endSection() ?>

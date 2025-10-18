@@ -20,8 +20,12 @@ $routes->get('/auth/getUser', 'Auth::getUser');
 // Roles dashboard routes
 $routes->get('/dashboard', 'Auth::dashboard');
 
+// Role-specific dashboards (Task 3)
+$routes->get('admin/dashboard', 'Admin::dashboard');
+$routes->get('teacher/dashboard', 'Teacher::dashboard');
+
 // Course enrollment routes
 $routes->post('/course/enroll', 'Course::enroll');
 
-// ✅ Announcements routes (Midterm)
+// Announcements routes (Midterm)
 $routes->get('/announcements', 'Announcement::index');

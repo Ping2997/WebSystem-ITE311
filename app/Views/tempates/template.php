@@ -6,16 +6,26 @@
     <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --green-700: #2f6f65;
+            --green-600: #3a7d6d;
+            --green-500: #4f8f7f;
+            --green-100: #eaf3f0;
+        }
+        .theme-navbar { background-color: var(--green-600); }
+        .theme-navbar .navbar-brand,
+        .theme-navbar .nav-link,
+        .theme-navbar .navbar-toggler { color: #ffffff !important; }
+        body { background-color: var(--green-100); }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">My CI Site</a>
-        </div>
-    </nav>
+    <?= view('tempates/header') ?>
 
     <div class="container mt-4">
-        <h1>Welcome to CodeIgniter 4 with Bootstrap!</h1>
+        <?= $this->renderSection('content') ?>
     </div>
 </body>
 </html>
