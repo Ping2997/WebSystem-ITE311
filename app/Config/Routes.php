@@ -22,3 +22,6 @@ $routes->get('/dashboard', 'Auth::dashboard');
 
 // Course enrollment routes
 $routes->post('/course/enroll', 'Course::enroll');
+
+// ✅ Announcements routes (Midterm)
+$routes->get('/announcements', 'Announcement::index');
