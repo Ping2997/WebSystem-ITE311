@@ -1,5 +1,6 @@
-# Disable directory browsing
+# Disable directory browsing and set a default document
 Options -Indexes
+DirectoryIndex index.php
 
 # ----------------------------------------------------------------------
 # Rewrite engine

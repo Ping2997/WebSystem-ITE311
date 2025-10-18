@@ -21,8 +21,13 @@ $routes->get('/auth/getUser', 'Auth::getUser');
 $routes->get('/dashboard', 'Auth::dashboard');
 
 // Role-specific dashboards (Task 3)
-$routes->get('admin/dashboard', 'Admin::dashboard');
-$routes->get('teacher/dashboard', 'Teacher::dashboard');
+// Protect role routes with RoleAuth (Task 4)
+$routes->group('admin', ['filter' => 'roleauth'], static function($routes) {
+    $routes->get('dashboard', 'Admin::dashboard');
+});
+$routes->group('teacher', ['filter' => 'roleauth'], static function($routes) {
+    $routes->get('dashboard', 'Teacher::dashboard');
+});
 
 // Course enrollment routes
 $routes->post('/course/enroll', 'Course::enroll');
