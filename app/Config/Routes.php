@@ -31,3 +31,7 @@ $routes->get('/materials/download/(:num)', 'Materials::download/$1');
 
 // Materials list per course (students/admin)
 $routes->get('/course/(:num)/materials', 'Materials::list/$1');
+
+// Notifications routes
+$routes->get('/notifications', 'Notifications::get');
+$routes->post('/notifications/mark_read/(:num)', 'Notifications::mark_as_read/$1');
