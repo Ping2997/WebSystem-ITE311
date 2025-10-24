@@ -1,0 +1,45 @@
+/* Global theme variables and utilities */
+:root {
+  --green-700: #2f6f65;
+  --green-600: #3a7d6d;
+  --green-500: #4f8f7f;
+  --green-100: #eaf3f0;
+}
+
+/* Base */
+body { background-color: var(--green-100); }
+
+/* Text colors */
+.text-green { color: var(--green-600) !important; }
+
+/* Navbar theme */
+.theme-navbar { background-color: var(--green-600); }
+.theme-navbar .navbar-brand,
+.theme-navbar .nav-link,
+.theme-navbar .navbar-toggler { color: #ffffff !important; }
+
+/* Buttons */
+.btn-green { background-color: var(--green-600); border-color: var(--green-600); color: #fff; }
+.btn-green:hover { background-color: var(--green-700); border-color: var(--green-700); color: #fff; }
+.btn-outline-green { color: var(--green-600); border-color: var(--green-600); }
+.btn-outline-green:hover { background-color: var(--green-600); color: #fff; border-color: var(--green-600); }
+
+/* Auth pages (login/register) */
+.login-box,
+.register-box {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 32px;
+  margin-top: 60px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Form focus states in green theme */
+.form-control:focus {
+  border-color: var(--green-500);
+  box-shadow: 0 0 0 .2rem rgba(63, 125, 109, 0.25);
+}
+
+/* Links matching theme */
+a { color: var(--green-600); }
+a:hover { color: var(--green-700); }

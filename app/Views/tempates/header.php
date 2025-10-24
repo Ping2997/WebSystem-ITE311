@@ -1,4 +1,4 @@
-    <nav class="navbar navbar-expand-lg navbar-dark theme-navbar">
+    <nav class="navbar navbar-expand-lg navbar-dark theme-navbar" style="background-color:#3a7d6d;">
         <div class="container">
             <a class="navbar-brand" href="<?= base_url() ?>">
                 <i class="fas fa-graduation-cap me-2"></i>ITE311 LMS
@@ -9,7 +9,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="<?= base_url() ?>">
+                        <a class="nav-link" href="<?= base_url() ?>">
                             <i class="fas fa-home me-1"></i>Home
                         </a>
                     </li>

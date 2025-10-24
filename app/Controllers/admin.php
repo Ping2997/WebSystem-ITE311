@@ -18,13 +18,21 @@ class Admin extends BaseController
             return redirect()->to(base_url('login'));
         }
 
-        // Render unified wrapper with user context
-        return view('auth/dashboard', [
+        // Prepare courses for dashboard (moved from view)
+        $courses = db_connect()->table('courses')
+            ->select('id, title')
+            ->orderBy('title', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        // Render unified wrapper with user context and courses
+        return view('Admin/admin', [
             'user' => [
                 'name'  => session('name'),
                 'email' => session('email'),
                 'role'  => session('role'),
-            ]
+            ],
+            'courses' => $courses,
         ]);
         }
 }

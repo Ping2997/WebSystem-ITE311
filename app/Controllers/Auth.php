@@ -187,7 +187,6 @@ class Auth extends BaseController
         $data = [
             'user' => [
                 'name' => session()->get('name'),
-                'email' => session()->get('email'),
                 'role' => session()->get('role'),
             ]
         ];
@@ -198,6 +197,15 @@ class Auth extends BaseController
             $enrollModel = new \App\Models\EnrollmentModel();
             $data['enrolledCourses'] = $enrollModel->getUserEnrollmentsDetailed($userId);
             $data['availableCourses'] = $enrollModel->getAvailableCourses($userId);
+        }
+
+        // If admin or teacher, provide list of courses for dashboards
+        if (in_array(session()->get('role'), ['admin','teacher'], true)) {
+            $data['courses'] = db_connect()->table('courses')
+                ->select('id, title')
+                ->orderBy('title', 'ASC')
+                ->get()
+                ->getResultArray();
         }
 
         return view('auth/dashboard', $data);

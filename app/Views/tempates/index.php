@@ -5,24 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --green-700: #2f6f65;
-            --green-600: #3a7d6d;
-            --green-500: #4f8f7f;
-            --green-100: #eaf3f0;
-        }
-        body { background-color: var(--green-100); }
-        .text-green { color: var(--green-600) !important; }
-        .theme-navbar { background-color: var(--green-600); }
-        .theme-navbar .navbar-brand,
-        .theme-navbar .nav-link,
-        .theme-navbar .navbar-toggler { color: #ffffff !important; }
-        .btn-green { background-color: var(--green-600); border-color: var(--green-600); color: #fff; }
-        .btn-green:hover { background-color: var(--green-700); border-color: var(--green-700); color: #fff; }
-        .btn-outline-green { color: var(--green-600); border-color: var(--green-600); }
-        .btn-outline-green:hover { background-color: var(--green-600); color: #fff; border-color: var(--green-600); }
-    </style>
+    <link href="<?= base_url('css/app.css') ?>" rel="stylesheet">
 </head>
 <body>
     
