@@ -38,11 +38,23 @@
   <div class="card shadow-sm mt-4">
     <div class="card-header fw-semibold bg-success text-white">Available Courses</div>
     <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <form id="searchForm" class="d-flex" action="<?= base_url('courses/search') ?>" method="get">
+            <div class="input-group">
+              <input type="text" id="searchInput" class="form-control" placeholder="Search courses..." name="search_term">
+              <button class="btn btn-outline-primary" type="submit">
+                <i class="bi bi-search"></i> Search
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
       <?php if (!empty($availableCourses)): ?>
-        <div id="available-courses-grid" class="row g-3">
+        <div id="coursesContainer" class="row g-3">
           <?php foreach ($availableCourses as $course): ?>
             <div class="col-md-6">
-              <div class="card h-100" data-card-course-id="<?= esc($course['id']); ?>">
+              <div class="card h-100 course-card" data-card-course-id="<?= esc($course['id']); ?>">
                 <div class="card-body">
                   <h5 class="card-title"><?= esc($course['title']); ?></h5>
                   <p class="card-text"><?= esc($course['description']); ?></p>
@@ -64,72 +76,146 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.enroll-btn').forEach(button => {
-    button.addEventListener('click', function() {
-      const courseId = this.getAttribute('data-course-id');
-      const btn = this;
+  function bindEnrollButtons() {
+    document.querySelectorAll('.enroll-btn').forEach(button => {
+      if (button.dataset.bound === '1') return;
+      button.dataset.bound = '1';
+      button.addEventListener('click', function() {
+        const courseId = this.getAttribute('data-course-id');
+        const btn = this;
 
-      fetch('<?= base_url('course/enroll') ?>', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-CSRF-TOKEN': getCookie('csrf_cookie_name') || ''
-        },
-        body: JSON.stringify({ course_id: courseId })
-      })
-      .then(async res => {
-        const ct = res.headers.get('content-type') || '';
-        if (!ct.includes('application/json')) {
-          const text = await res.text();
-          throw new Error(text.replace(/<[^>]*>/g,'').trim() || 'Server returned non-JSON response');
-        }
-        return res.json();
-      })
-      .then(data => {
-        showFeedback(data.success ? 'success' : 'danger', data.message || 'Request completed');
-        if (data.success) {
-          // Disable button and update text
-          btn.disabled = true;
-          btn.textContent = 'Enrolled';
-
-          // Move card from Available Courses to My Courses list
-          const card = btn.closest('[data-card-course-id]');
-          if (card) {
-            const gridCol = card.closest('.col-md-6');
-            if (gridCol) gridCol.remove();
+        fetch('<?= base_url('course/enroll') ?>', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': getCookie('csrf_cookie_name') || ''
+          },
+          body: JSON.stringify({ course_id: courseId })
+        })
+        .then(async res => {
+          const ct = res.headers.get('content-type') || '';
+          if (!ct.includes('application/json')) {
+            const text = await res.text();
+            throw new Error(text.replace(/<[^>]*>/g,'').trim() || 'Server returned non-JSON response');
           }
+          return res.json();
+        })
+        .then(data => {
+          showFeedback(data.success ? 'success' : 'danger', data.message || 'Request completed');
+          if (data.success) {
+            btn.disabled = true;
+            btn.textContent = 'Enrolled';
 
-          // Remove placeholder if present
-          const placeholder = document.getElementById('no-enrolled');
-          if (placeholder) placeholder.remove();
+            const card = btn.closest('[data-card-course-id]');
+            if (card) {
+              const gridCol = card.closest('.col-md-6');
+              if (gridCol) gridCol.remove();
+            }
 
-          // Append to My Courses list
-          const list = document.getElementById('my-courses-list');
-          const c = data.course || {};
-          const li = document.createElement('li');
-          li.className = 'list-group-item';
-          li.innerHTML = `<strong>${escapeHtml(c.title || btn.closest('.card-body').querySelector('.card-title').textContent)}</strong><br>
-                          <small>${escapeHtml(c.description || btn.closest('.card-body').querySelector('.card-text').textContent)}</small>`;
-          list.appendChild(li);
+            const placeholder = document.getElementById('no-enrolled');
+            if (placeholder) placeholder.remove();
 
-          // If no more available cards, show placeholder
-          const grid = document.getElementById('available-courses-grid');
-          if (grid && grid.querySelectorAll('.col-md-6').length === 0) {
-            const noAvail = document.getElementById('no-available');
-            if (!noAvail) {
-              const p = document.createElement('p');
-              p.id = 'no-available';
-              p.className = 'text-muted';
-              p.textContent = 'No available courses right now.';
-              grid.parentElement.appendChild(p);
+            const list = document.getElementById('my-courses-list');
+            const c = data.course || {};
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.innerHTML = `<strong>${escapeHtml(c.title || btn.closest('.card-body').querySelector('.card-title').textContent)}</strong><br>
+                            <small>${escapeHtml(c.description || btn.closest('.card-body').querySelector('.card-text').textContent)}</small>`;
+            list.appendChild(li);
+
+            const grid = document.getElementById('coursesContainer');
+            if (grid && grid.querySelectorAll('.col-md-6').length === 0) {
+              const noAvail = document.getElementById('no-available');
+              if (!noAvail) {
+                const p = document.createElement('p');
+                p.id = 'no-available';
+                p.className = 'text-muted';
+                p.textContent = 'No available courses right now.';
+                grid.parentElement.appendChild(p);
+              }
             }
           }
-        }
-      })
-      .catch(err => showFeedback('danger', 'Error enrolling: ' + err));
+        })
+        .catch(err => showFeedback('danger', 'Error enrolling: ' + err));
+      });
     });
-  });
+  }
+
+  bindEnrollButtons();
+
+  const searchForm = document.getElementById('searchForm');
+  if (searchForm) {
+    searchForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const term = document.getElementById('searchInput').value.trim();
+      const url = new URL('<?= base_url('courses/search') ?>');
+      if (term) url.searchParams.set('search_term', term);
+      fetch(url.toString(), { headers: { 'Accept': 'application/json' } })
+        .then(res => res.json())
+        .then(data => {
+          const grid = document.getElementById('coursesContainer');
+          const body = searchForm.closest('.card-body');
+          if (!grid) {
+            const placeholder = document.getElementById('no-available');
+            if (placeholder) placeholder.remove();
+          }
+          const courses = (data && data.courses) ? data.courses : [];
+
+          // Build grid HTML
+          let html = '';
+          courses.forEach(c => {
+            html += `
+            <div class="col-md-6">
+              <div class="card h-100 course-card" data-card-course-id="${escapeHtml(c.id)}">
+                <div class="card-body">
+                  <h5 class="card-title">${escapeHtml(c.title)}</h5>
+                  <p class="card-text">${escapeHtml(c.description)}</p>
+                  <button class="btn btn-success enroll-btn" data-course-id="${escapeHtml(c.id)}">Enroll</button>
+                </div>
+              </div>
+            </div>`;
+          });
+
+          let gridEl = document.getElementById('coursesContainer');
+          if (!gridEl) {
+            gridEl = document.createElement('div');
+            gridEl.id = 'coursesContainer';
+            gridEl.className = 'row g-3';
+            body.appendChild(gridEl);
+          }
+          gridEl.innerHTML = html;
+
+          // If no results, show placeholder text
+          if (courses.length === 0) {
+            const p = document.createElement('p');
+            p.id = 'no-available';
+            p.className = 'text-muted';
+            p.textContent = 'No available courses right now.';
+            if (gridEl.parentElement) gridEl.parentElement.appendChild(p);
+          } else {
+            const placeholder = document.getElementById('no-available');
+            if (placeholder) placeholder.remove();
+          }
+
+          bindEnrollButtons();
+        })
+        .catch(err => showFeedback('danger', 'Search failed: ' + err));
+    });
+  }
+
+  // Client-side instant filtering with jQuery
+  if (window.jQuery) {
+    const $ = window.jQuery;
+    $(document).on('keyup', '#searchInput', function() {
+      const value = ($(this).val() || '').toLowerCase();
+      $('#coursesContainer .course-card').each(function() {
+        const text = $(this).text().toLowerCase();
+        const match = text.indexOf(value) > -1;
+        $(this).closest('.col-md-6')[match ? 'show' : 'hide']();
+      });
+    });
+  }
 
   function showFeedback(type, message) {
     const el = document.getElementById('feedback');
@@ -156,3 +242,4 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+

@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\CourseModel;
 use App\Models\EnrollmentModel;
 use App\Models\NotificationModel;
 use CodeIgniter\Controller;
@@ -63,5 +64,38 @@ class Course extends Controller
     public function index()
     {
         return view('tempates/courses'); // make sure spelling matches your folder name
+    }
+
+    public function search()
+    {
+        $session = session();
+        $userId = (int) ($session->get('userID') ?? 0);
+
+        $searchTerm = $this->request->getGet('search_term');
+        if ($searchTerm === null) {
+            $searchTerm = $this->request->getPost('search_term');
+        }
+
+        $courseModel = new CourseModel();
+
+        // If user is logged in, show only available (not yet enrolled) courses; otherwise search all
+        if ($userId > 0) {
+            $courses = $courseModel->getAvailableCourses($userId, $searchTerm);
+        } else {
+            $builder = $courseModel->select('id, title, description');
+            if (!empty($searchTerm)) {
+                $builder->groupStart()
+                    ->like('title', $searchTerm)
+                    ->orLike('description', $searchTerm)
+                ->groupEnd();
+            }
+            $courses = $builder->findAll();
+        }
+
+        if ($this->request->isAJAX() || ($this->request->getHeaderLine('Accept') && strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false)) {
+            return $this->response->setJSON(['courses' => $courses, 'search_term' => (string) $searchTerm]);
+        }
+
+        return view('courses/search_results', ['courses' => $courses, 'searchTerm' => $searchTerm]);
     }
 }

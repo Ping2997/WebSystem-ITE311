@@ -23,6 +23,10 @@ $routes->get('/dashboard', 'Auth::dashboard');
 // Course enrollment routes
 $routes->post('/course/enroll', 'Course::enroll');
 
+// Course search routes
+$routes->get('/courses/search', 'Course::search');
+$routes->post('/courses/search', 'Course::search');
+
 // Materials management routes
 $routes->get('/admin/course/(:num)/upload', 'Materials::upload/$1');
 $routes->post('/admin/course/(:num)/upload', 'Materials::upload/$1');
@@ -35,3 +39,4 @@ $routes->get('/course/(:num)/materials', 'Materials::list/$1');
 // Notifications routes
 $routes->get('/notifications', 'Notifications::get');
 $routes->post('/notifications/mark_read/(:num)', 'Notifications::mark_as_read/$1');
+

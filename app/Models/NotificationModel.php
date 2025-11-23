@@ -18,7 +18,7 @@ class NotificationModel extends Model
     public function getNotificationsForUser($userId)
     {
         return $this->where('user_id', $userId)
-                    ->where('is_read', 0) // only unread so read items disappear from list
+                    ->where('is_read', 0) 
                     ->orderBy('created_at', 'DESC')
                     ->limit(5)
                     ->findAll();
