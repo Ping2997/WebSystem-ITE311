@@ -23,6 +23,27 @@ class CreateCoursesTable extends Migration
                 'type' => 'TEXT',
                 'null' => true,
             ],
+            'semester' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 10,
+                'null'       => true,
+            ],
+            'start_date' => [
+                'type' => 'DATE',
+                'null' => true,
+            ],
+            'end_date' => [
+                'type' => 'DATE',
+                'null' => true,
+            ],
+            'start_time' => [
+                'type' => 'TIME',
+                'null' => true,
+            ],
+            'end_time' => [
+                'type' => 'TIME',
+                'null' => true,
+            ],
             'instructor_id' => [
                 'type'       => 'INT',
                 'constraint' => 11,

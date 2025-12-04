@@ -27,6 +27,9 @@ $routes->post('/course/enroll', 'Course::enroll');
 $routes->get('/courses/search', 'Course::search');
 $routes->post('/courses/search', 'Course::search');
 
+// Course management routes (admin/teacher)
+$routes->post('/courses/store', 'Course::store');
+
 // Materials management routes
 $routes->get('/admin/course/(:num)/upload', 'Materials::upload/$1');
 $routes->post('/admin/course/(:num)/upload', 'Materials::upload/$1');

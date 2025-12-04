@@ -34,7 +34,7 @@ class EnrollmentModel extends Model
      */
     public function getUserEnrollmentsDetailed(int $user_id): array
     {
-        return $this->select('courses.id, courses.title, courses.description')
+        return $this->select('courses.id, courses.title, courses.description, courses.semester, courses.start_date, courses.end_date, courses.start_time, courses.end_time')
             ->join('courses', 'courses.id = enrollments.course_id')
             ->where('enrollments.user_id', $user_id)
             ->findAll();
@@ -49,7 +49,7 @@ class EnrollmentModel extends Model
         $sub = $db->table('enrollments')->select('course_id')->where('user_id', $user_id);
 
         return $db->table('courses')
-            ->select('id, title, description')
+            ->select('id, title, description, start_date, end_date, start_time, end_time')
             ->whereNotIn('id', $sub)
             ->get()
             ->getResultArray();

@@ -195,8 +195,33 @@ class Auth extends BaseController
         if (session()->get('role') === 'student') {
             $userId = (int) (session()->get('userID') ?? 0);
             $enrollModel = new \App\Models\EnrollmentModel();
-            $data['enrolledCourses'] = $enrollModel->getUserEnrollmentsDetailed($userId);
+
+            $enrolledCourses = $enrollModel->getUserEnrollmentsDetailed($userId);
+
+            $firstSemCourses = [];
+            $secondSemCourses = [];
+
+            foreach ($enrolledCourses as $course) {
+                $sem = (string) ($course['semester'] ?? '');
+                if ($sem === '2nd') {
+                    $secondSemCourses[] = $course;
+                } else {
+                    $firstSemCourses[] = $course;
+                }
+            }
+
+            usort($firstSemCourses, function ($a, $b) {
+                return strcmp((string) ($a['start_date'] ?? ''), (string) ($b['start_date'] ?? ''));
+            });
+
+            usort($secondSemCourses, function ($a, $b) {
+                return strcmp((string) ($a['start_date'] ?? ''), (string) ($b['start_date'] ?? ''));
+            });
+
+            $data['enrolledCourses'] = $enrolledCourses;
             $data['availableCourses'] = $enrollModel->getAvailableCourses($userId);
+            $data['enrolledFirstSem'] = $firstSemCourses;
+            $data['enrolledSecondSem'] = $secondSemCourses;
         }
 
         // If admin or teacher, provide list of courses for dashboards

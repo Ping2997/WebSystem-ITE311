@@ -31,7 +31,7 @@
       <ul class="list-group list-group-flush">
         <li class="list-group-item">No courses yet.</li>
       </ul>
-      <a href="#" class="btn btn-green btn-sm mt-3">Create New Course</a>
+      <button type="button" class="btn btn-green btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#subjectModal">Create New Course</button>
     </div>
   </div>
 
@@ -41,4 +41,6 @@
       <p class="text-muted mb-0">No new submissions.</p>
     </div>
   </div>
+
+  <?= view('courses/modal_form') ?>
 </div>

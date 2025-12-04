@@ -21,19 +21,42 @@ class Student extends BaseController
             return redirect()->to(base_url('login'));
         }
 
-        // Load models
         $courseModel = new CourseModel();
         $enrollmentModel = new EnrollmentModel();
 
-        $userId = session('id');
+        $userId = (int) (session('userID') ?? 0);
 
-        // Get user data
+        $enrolledCourses = $enrollmentModel->getUserEnrollmentsDetailed($userId);
+
+        $firstSemCourses = [];
+        $secondSemCourses = [];
+
+        foreach ($enrolledCourses as $course) {
+            $sem = (string) ($course['semester'] ?? '');
+            if ($sem === '2nd') {
+                $secondSemCourses[] = $course;
+            } else {
+                // Default or "1st" go to first semester box
+                $firstSemCourses[] = $course;
+            }
+        }
+
+        usort($firstSemCourses, function ($a, $b) {
+            return strcmp((string) ($a['start_date'] ?? ''), (string) ($b['start_date'] ?? ''));
+        });
+
+        usort($secondSemCourses, function ($a, $b) {
+            return strcmp((string) ($a['start_date'] ?? ''), (string) ($b['start_date'] ?? ''));
+        });
+
         $data = [
             'name' => session('name'),
             'email' => session('email'),
             'role' => session('role'),
-            'enrolledCourses' => $enrollmentModel->getUserEnrollments($userId),
-            'availableCourses' => $courseModel->getAvailableCourses($userId)
+            'enrolledCourses' => $enrolledCourses,
+            'availableCourses' => $courseModel->getAvailableCourses($userId),
+            'enrolledFirstSem' => $firstSemCourses,
+            'enrolledSecondSem' => $secondSemCourses,
         ];
 
         // Load the student dashboard view

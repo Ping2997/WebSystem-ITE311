@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\MaterialsModel;
 use App\Models\EnrollmentModel;
+use App\Models\NotificationModel;
 use CodeIgniter\Controller;
 
 class Materials extends Controller
@@ -202,6 +203,33 @@ class Materials extends Controller
                 ];
 
                 if ($this->materialsModel->insertMaterial($data)) {
+                    // Notify all enrolled students that new material was uploaded
+                    try {
+                        $enrollModel = new EnrollmentModel();
+                        $notifModel  = new NotificationModel();
+
+                        // Get course title for friendlier message
+                        $courseRow = db_connect()->table('courses')
+                            ->select('title')
+                            ->where('id', (int) $course_id)
+                            ->get()
+                            ->getRowArray();
+                        $courseTitle = $courseRow['title'] ?? 'a course';
+
+                        $enrollments = $enrollModel->where('course_id', (int) $course_id)->findAll();
+                        foreach ($enrollments as $en) {
+                            $notifModel->insert([
+                                'user_id'    => (int) $en['user_id'],
+                                'message'    => 'New material has been uploaded for ' . $courseTitle,
+                                'is_read'    => 0,
+                                'created_at' => date('Y-m-d H:i:s'),
+                            ]);
+                        }
+                    } catch (\Throwable $e) {
+                        // Do not block upload on notification failure; optionally log
+                        log_message('error', 'Material upload notification failed: ' . $e->getMessage());
+                    }
+
                     return redirect()->to(base_url('course/' . (int) $course_id . '/materials'))
                         ->with('success', 'Material uploaded successfully!');
                 } else {

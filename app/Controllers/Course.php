@@ -54,7 +54,11 @@ class Course extends Controller
             }
 
             // Fetch course details for client UI update
-            $course = db_connect()->table('courses')->select('id, title, description')->where('id', $course_id)->get()->getRowArray();
+            $course = db_connect()->table('courses')
+                ->select('id, title, description, semester, start_date, end_date, start_time, end_time')
+                ->where('id', $course_id)
+                ->get()
+                ->getRowArray();
             return $this->response->setJSON(['success' => true, 'message' => 'Enrolled successfully', 'course' => $course]);
         }
 
@@ -97,5 +101,56 @@ class Course extends Controller
         }
 
         return view('courses/search_results', ['courses' => $courses, 'searchTerm' => $searchTerm]);
+    }
+
+    public function store()
+    {
+        $session = session();
+        if (! $session->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+
+        $role = $session->get('role');
+        if ($role !== 'admin' && $role !== 'teacher') {
+            return redirect()->to(base_url('dashboard'));
+        }
+
+        $courseModel = new CourseModel();
+
+        $validation = \Config\Services::validation();
+        $rules = [
+            'title' => 'required|min_length[3]|max_length[200]',
+            'semester' => 'required|in_list[1st,2nd]',
+            'start_date' => 'permit_empty|valid_date',
+            'end_date' => 'permit_empty|valid_date',
+            // Time fields: allow empty or raw time strings; CI4 has no built-in valid_time rule
+            'start_time' => 'permit_empty',
+            'end_time' => 'permit_empty',
+        ];
+
+        if (! $validation->setRules($rules)->withRequest($this->request)->run()) {
+            $session->setFlashdata('error', 'Please fix the errors in the form.');
+            return redirect()->back()->withInput();
+        }
+
+        $instructorId = (int) ($session->get('userID') ?? 0);
+
+        $data = [
+            'title'        => $this->request->getPost('title'),
+            'description'  => $this->request->getPost('description'),
+            'semester'     => $this->request->getPost('semester'),
+            'start_date'   => $this->request->getPost('start_date') ?: null,
+            'end_date'     => $this->request->getPost('end_date') ?: null,
+            'start_time'   => $this->request->getPost('start_time') ?: null,
+            'end_time'     => $this->request->getPost('end_time') ?: null,
+            'instructor_id'=> $instructorId,
+            'category'     => 'General',
+            'status'       => 'active',
+        ];
+
+        $courseModel->insert($data);
+
+        $session->setFlashdata('success', 'Course created successfully.');
+        return redirect()->to(base_url('dashboard'));
     }
 }

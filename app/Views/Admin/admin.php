@@ -25,6 +25,12 @@
     </form>
   </div>
 
+  <div class="mb-3">
+    <button type="button" class="btn btn-green btn-sm" data-bs-toggle="modal" data-bs-target="#subjectModal">
+      <i class="fa fa-plus me-1"></i> Add Course
+    </button>
+  </div>
+
   <div class="row g-3">
     <div class="col-md-3">
       <div class="card shadow-sm">
@@ -50,4 +56,6 @@
       <p class="text-muted mb-0">No recent activity to show.</p>
     </div>
   </div>
+
+  <?= view('courses/modal_form') ?>
 </div>

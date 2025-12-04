@@ -8,7 +8,7 @@ class CourseModel extends Model
 {
     protected $table = 'courses';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['title', 'description'];
+    protected $allowedFields = ['title', 'description', 'semester', 'start_date', 'end_date', 'start_time', 'end_time', 'instructor_id', 'category', 'status'];
     protected $useTimestamps = false;
 
     /**
@@ -20,7 +20,7 @@ class CourseModel extends Model
         $sub = $db->table('enrollments')->select('course_id')->where('user_id', $user_id);
 
         $builder = $db->table($this->table)
-            ->select('id, title, description')
+            ->select('id, title, description, start_date, end_date, start_time, end_time')
             ->whereNotIn('id', $sub);
 
         if ($searchTerm) {
