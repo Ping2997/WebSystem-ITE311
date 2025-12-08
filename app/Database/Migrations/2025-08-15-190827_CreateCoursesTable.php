@@ -28,6 +28,16 @@ class CreateCoursesTable extends Migration
                 'constraint' => 10,
                 'null'       => true,
             ],
+            'year_level' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 20,
+                'null'       => true,
+            ],
+            'capacity' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'null'       => true,
+            ],
             'start_date' => [
                 'type' => 'DATE',
                 'null' => true,

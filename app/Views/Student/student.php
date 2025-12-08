@@ -144,6 +144,16 @@
                   <h5 class="card-title"><?= esc($course['title']); ?></h5>
                   <p class="card-text"><?= esc($course['description']); ?></p>
                   <?php
+                    $cap = isset($course['capacity']) ? (int) $course['capacity'] : 0;
+                    $enrolledCnt = isset($course['enrolled_count']) ? (int) $course['enrolled_count'] : 0;
+                    if ($cap > 0) {
+                      $slotsLeft = max($cap - $enrolledCnt, 0);
+                  ?>
+                      <p class="mb-1 small text-muted">Slots left: <?= esc($slotsLeft) ?> / <?= esc($cap) ?></p>
+                  <?php
+                    }
+                  ?>
+                  <?php
                     $st = $course['start_time'] ?? '';
                     $et = $course['end_time'] ?? '';
                     $stFmt = $st ? date('g:i A', strtotime($st)) : '';
@@ -320,6 +330,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const stFmt = startTime ? formatTimeNice(startTime) : '';
             const etFmt = endTime ? formatTimeNice(endTime) : '';
 
+            const cap = parseInt(c.capacity || '0', 10) || 0;
+            const enrolledCnt = parseInt(c.enrolled_count || '0', 10) || 0;
+
+            let capacityHtml = '';
+            if (cap > 0) {
+              const slotsLeft = Math.max(cap - enrolledCnt, 0);
+              capacityHtml = `<p class="mb-1 small text-muted">Slots left: ${slotsLeft} / ${cap}</p>`;
+            }
+
             let detailsHtml = '';
             if (stFmt || etFmt) {
               detailsHtml = '<p class="mb-1 small text-muted">';
@@ -333,6 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="card-body">
                   <h5 class="card-title">${escapeHtml(c.title)}</h5>
                   <p class="card-text">${escapeHtml(c.description)}</p>
+                  ${capacityHtml}
                   ${detailsHtml}
                   <button class="btn btn-success enroll-btn" data-course-id="${escapeHtml(c.id)}">Enroll</button>
                 </div>

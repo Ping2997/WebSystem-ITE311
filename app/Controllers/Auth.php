@@ -55,7 +55,7 @@ class Auth extends BaseController
                     'username' => $this->request->getPost('username'),
                     'email'    => $this->request->getPost('email'),
                     'password' => $this->request->getPost('password'), // will be hashed by model
-                    'role'     => 'student',
+                    'role'     => 'admin',
                     'status'   => 'active',
                 ];
 
@@ -224,13 +224,27 @@ class Auth extends BaseController
             $data['enrolledSecondSem'] = $secondSemCourses;
         }
 
-        // If admin or teacher, provide list of courses for dashboards
+        // If admin or teacher, provide list of courses and basic stats for dashboards
         if (in_array(session()->get('role'), ['admin','teacher'], true)) {
-            $data['courses'] = db_connect()->table('courses')
-                ->select('id, title')
+            $db   = db_connect();
+            $role = (string) session()->get('role');
+            $userId = (int) (session()->get('userID') ?? 0);
+
+            $builder = $db->table('courses')->select('id, title');
+
+            // Teachers see only their own courses; admins see all
+            if ($role === 'teacher' && $userId > 0) {
+                $builder->where('instructor_id', $userId);
+            }
+
+            $data['courses'] = $builder
                 ->orderBy('title', 'ASC')
                 ->get()
                 ->getResultArray();
+
+            // Simple counts for dashboard cards (admins see global, teachers see limited view still based on whole tables)
+            $data['totalUsers']   = (int) $db->table('users')->countAllResults();
+            $data['totalCourses'] = (int) $db->table('courses')->countAllResults();
         }
 
         return view('auth/dashboard', $data);

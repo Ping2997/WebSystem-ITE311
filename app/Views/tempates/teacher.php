@@ -22,6 +22,11 @@
       <div class="col-auto">
         <button class="btn btn-green btn-sm" type="submit"><i class="fa fa-upload me-1"></i> Go to Upload</button>
       </div>
+      <div class="col-auto">
+        <a href="#" class="btn btn-outline-green btn-sm" onclick="const sel=this.closest('form').querySelector('select[name=course]'); if(sel && sel.value){ window.location.href='<?= base_url('admin/course') ?>/'+sel.value; } return false;">
+          <i class="fa fa-info-circle me-1"></i> View Details
+        </a>
+      </div>
     </form>
   </div>
 
@@ -29,9 +34,30 @@
     <div class="card-header fw-semibold">My Courses</div>
     <div class="card-body">
       <ul class="list-group list-group-flush">
-        <li class="list-group-item">No courses yet.</li>
+        <?php if (!empty($courses)): ?>
+          <?php foreach ($courses as $c): ?>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-semibold mb-0"><?= esc($c['title']) ?></div>
+              </div>
+              <div class="btn-group btn-group-sm" role="group">
+                <a href="<?= base_url('admin/course/' . (int)$c['id']) ?>" class="btn btn-outline-green">
+                  <i class="fa fa-info-circle me-1"></i> Details
+                </a>
+                <a href="<?= base_url('admin/course/' . (int)$c['id'] . '/upload') ?>" class="btn btn-outline-success">
+                  <i class="fa fa-upload me-1"></i> Upload
+                </a>
+              </div>
+            </li>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <li class="list-group-item text-muted">No courses yet.</li>
+        <?php endif; ?>
       </ul>
       <button type="button" class="btn btn-green btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#subjectModal">Create New Course</button>
+      <button type="button" class="btn btn-green btn-sm mt-3 ms-2" data-bs-toggle="modal" data-bs-target="#studentModal">
+        <i class="fa fa-user-plus me-1"></i> Add Student
+      </button>
     </div>
   </div>
 
@@ -43,4 +69,5 @@
   </div>
 
   <?= view('courses/modal_form') ?>
+  <?= view('Admin/modal_form') ?>
 </div>

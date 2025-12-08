@@ -1,6 +1,6 @@
 DirectoryIndex public/index.php
 RewriteEngine On
-RewriteBase /WebSystem-ITE311/
+RewriteBase /ITE311-AUTIDA/
 
 
 

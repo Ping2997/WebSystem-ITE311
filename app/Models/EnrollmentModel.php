@@ -30,6 +30,18 @@ class EnrollmentModel extends Model
     }
 
     /**
+     * Get students enrolled in a specific course with basic user info.
+     */
+    public function getCourseEnrollmentsWithUsers(int $course_id): array
+    {
+        return $this->select('users.id, users.username, users.email, users.year_level')
+            ->join('users', 'users.id = enrollments.user_id')
+            ->where('enrollments.course_id', $course_id)
+            ->orderBy('users.username', 'ASC')
+            ->findAll();
+    }
+
+    /**
      * Get user's enrolled courses with course title/description.
      */
     public function getUserEnrollmentsDetailed(int $user_id): array
@@ -48,10 +60,30 @@ class EnrollmentModel extends Model
         $db = db_connect();
         $sub = $db->table('enrollments')->select('course_id')->where('user_id', $user_id);
 
-        return $db->table('courses')
-            ->select('id, title, description, start_date, end_date, start_time, end_time')
-            ->whereNotIn('id', $sub)
+        // Get student's year level
+        $userRow = $db->table('users')
+            ->select('year_level')
+            ->where('id', $user_id)
             ->get()
-            ->getResultArray();
+            ->getRowArray();
+
+        $yearLevel = $userRow['year_level'] ?? null;
+
+        $builder = $db->table('courses')
+            ->select('courses.id, courses.title, courses.description, courses.start_date, courses.end_date, courses.start_time, courses.end_time, courses.capacity')
+            ->selectCount('enrollments.id', 'enrolled_count')
+            ->join('enrollments', 'enrollments.course_id = courses.id', 'left')
+            ->whereNotIn('courses.id', $sub)
+            ->groupBy('courses.id');
+
+        // If student has a year level, only show matching courses (or those with no year set)
+        if (!empty($yearLevel)) {
+            $builder->groupStart()
+                ->where('year_level', $yearLevel)
+                ->orWhere('year_level', null)
+            ->groupEnd();
+        }
+
+        return $builder->get()->getResultArray();
     }
 }

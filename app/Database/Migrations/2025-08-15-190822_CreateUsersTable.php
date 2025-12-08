@@ -29,10 +29,30 @@ class CreateUsersTable extends Migration
                 'type'       => 'VARCHAR',
                 'constraint' => 255,
             ],
+            'first_name' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 100,
+                'null'       => true,
+            ],
+            'last_name' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 100,
+                'null'       => true,
+            ],
+            'department' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 100,
+                'null'       => true,
+            ],
             'role' => [
                 'type'       => 'ENUM',
                 'constraint' => ['admin', 'teacher', 'student'],
                 'default'    => 'student',
+            ],
+            'year_level' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 20,
+                'null'       => true,
             ],
             'status' => [
                 'type'       => 'VARCHAR',

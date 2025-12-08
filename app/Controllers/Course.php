@@ -9,6 +9,49 @@ use CodeIgniter\Controller;
 
 class Course extends Controller
 {
+    public function detail($id)
+    {
+        $session = session();
+        if (! $session->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+
+        $role = $session->get('role');
+        if ($role !== 'admin' && $role !== 'teacher') {
+            return redirect()->to(base_url('dashboard'));
+        }
+
+        $courseId = (int) $id;
+        $db = db_connect();
+
+        $course = $db->table('courses')
+            ->select('courses.*, users.username AS instructor_name')
+            ->join('users', 'users.id = courses.instructor_id', 'left')
+            ->where('courses.id', $courseId)
+            ->get()
+            ->getRowArray();
+
+        if (!$course) {
+            return redirect()->to(base_url('dashboard'));
+        }
+
+        // Teachers may only view their own courses
+        $userId = (int) ($session->get('userID') ?? 0);
+        if ($role === 'teacher' && $userId > 0 && (int) ($course['instructor_id'] ?? 0) !== $userId) {
+            return redirect()->to(base_url('dashboard'));
+        }
+
+        $enrollModel = new EnrollmentModel();
+        $enrolledStudents = $enrollModel->getCourseEnrollmentsWithUsers($courseId);
+        $enrolledCount = count($enrolledStudents);
+
+        return view('courses/detail', [
+            'course'           => $course,
+            'enrolledStudents' => $enrolledStudents,
+            'enrolledCount'    => $enrolledCount,
+        ]);
+    }
+
     public function enroll()
     {
         $session = session();
@@ -27,6 +70,24 @@ class Course extends Controller
 
         if ($enrollmentModel->isAlreadyEnrolled($user_id, $course_id)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Already enrolled']);
+        }
+
+        // Enforce course capacity if set
+        $courseRow = db_connect()->table('courses')
+            ->select('capacity')
+            ->where('id', $course_id)
+            ->get()
+            ->getRowArray();
+
+        $capacity = isset($courseRow['capacity']) ? (int) $courseRow['capacity'] : 0;
+        if ($capacity > 0) {
+            $currentCount = $enrollmentModel->where('course_id', $course_id)->countAllResults();
+            if ($currentCount >= $capacity) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'This course is already full.',
+                ]);
+            }
         }
 
         $data = [
@@ -121,6 +182,8 @@ class Course extends Controller
         $rules = [
             'title' => 'required|min_length[3]|max_length[200]',
             'semester' => 'required|in_list[1st,2nd]',
+            'year_level' => 'required',
+            'capacity' => 'permit_empty|integer|greater_than[0]',
             'start_date' => 'permit_empty|valid_date',
             'end_date' => 'permit_empty|valid_date',
             // Time fields: allow empty or raw time strings; CI4 has no built-in valid_time rule
@@ -139,6 +202,8 @@ class Course extends Controller
             'title'        => $this->request->getPost('title'),
             'description'  => $this->request->getPost('description'),
             'semester'     => $this->request->getPost('semester'),
+            'year_level'   => $this->request->getPost('year_level'),
+            'capacity'     => $this->request->getPost('capacity') ?: null,
             'start_date'   => $this->request->getPost('start_date') ?: null,
             'end_date'     => $this->request->getPost('end_date') ?: null,
             'start_time'   => $this->request->getPost('start_time') ?: null,

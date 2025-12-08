@@ -30,6 +30,9 @@ $routes->post('/courses/search', 'Course::search');
 // Course management routes (admin/teacher)
 $routes->post('/courses/store', 'Course::store');
 
+// Course detail (admin/teacher)
+$routes->get('/admin/course/(:num)', 'Course::detail/$1');
+
 // Materials management routes
 $routes->get('/admin/course/(:num)/upload', 'Materials::upload/$1');
 $routes->post('/admin/course/(:num)/upload', 'Materials::upload/$1');
@@ -42,4 +45,9 @@ $routes->get('/course/(:num)/materials', 'Materials::list/$1');
 // Notifications routes
 $routes->get('/notifications', 'Notifications::get');
 $routes->post('/notifications/mark_read/(:num)', 'Notifications::mark_as_read/$1');
+ 
+// Student management route (admin/teacher) - modal posts here
+$routes->post('/students/store', 'ManageStudents::store');
 
+// Teacher management route (admin only)
+$routes->post('/teachers/store', 'ManageTeachers::store');

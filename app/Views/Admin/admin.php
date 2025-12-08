@@ -22,12 +22,23 @@
       <div class="col-auto">
         <button class="btn btn-green btn-sm" type="submit"><i class="fa fa-upload me-1"></i> Go to Upload</button>
       </div>
+      <div class="col-auto">
+        <a href="#" class="btn btn-outline-green btn-sm" onclick="const sel=this.closest('form').querySelector('select[name=course]'); if(sel && sel.value){ window.location.href='<?= base_url('admin/course') ?>/'+sel.value; } return false;">
+          <i class="fa fa-info-circle me-1"></i> View Details
+        </a>
+      </div>
     </form>
   </div>
 
   <div class="mb-3">
     <button type="button" class="btn btn-green btn-sm" data-bs-toggle="modal" data-bs-target="#subjectModal">
       <i class="fa fa-plus me-1"></i> Add Course
+    </button>
+    <button type="button" class="btn btn-green btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#studentModal">
+      <i class="fa fa-user-plus me-1"></i> Add Student
+    </button>
+    <button type="button" class="btn btn-green btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#teacherModal">
+      <i class="fa fa-chalkboard-teacher me-1"></i> Add Teacher
     </button>
   </div>
 
@@ -36,7 +47,9 @@
       <div class="card shadow-sm">
         <div class="card-body">
           <h6 class="text-muted mb-1">Total Users</h6>
-          <div class="fs-4 fw-semibold">—</div>
+          <div class="fs-4 fw-semibold">
+            <?= isset($totalUsers) ? (int) $totalUsers : '—' ?>
+          </div>
         </div>
       </div>
     </div>
@@ -44,7 +57,9 @@
       <div class="card shadow-sm">
         <div class="card-body">
           <h6 class="text-muted mb-1">Total Courses</h6>
-          <div class="fs-4 fw-semibold">—</div>
+          <div class="fs-4 fw-semibold">
+            <?= isset($totalCourses) ? (int) $totalCourses : '—' ?>
+          </div>
         </div>
       </div>
     </div>
@@ -58,4 +73,6 @@
   </div>
 
   <?= view('courses/modal_form') ?>
+  <?= view('Admin/modal_form') ?>
+  <?= view('Admin/teacher_modal') ?>
 </div>

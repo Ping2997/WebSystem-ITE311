@@ -8,7 +8,7 @@ class CourseModel extends Model
 {
     protected $table = 'courses';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['title', 'description', 'semester', 'start_date', 'end_date', 'start_time', 'end_time', 'instructor_id', 'category', 'status'];
+    protected $allowedFields = ['title', 'description', 'semester', 'year_level', 'capacity', 'start_date', 'end_date', 'start_time', 'end_time', 'instructor_id', 'category', 'status'];
     protected $useTimestamps = false;
 
     /**
@@ -19,9 +19,28 @@ class CourseModel extends Model
         $db = db_connect();
         $sub = $db->table('enrollments')->select('course_id')->where('user_id', $user_id);
 
+        // Get student's year level
+        $userRow = $db->table('users')
+            ->select('year_level')
+            ->where('id', $user_id)
+            ->get()
+            ->getRowArray();
+
+        $yearLevel = $userRow['year_level'] ?? null;
+
         $builder = $db->table($this->table)
-            ->select('id, title, description, start_date, end_date, start_time, end_time')
-            ->whereNotIn('id', $sub);
+            ->select('courses.id, courses.title, courses.description, courses.start_date, courses.end_date, courses.start_time, courses.end_time, courses.capacity')
+            ->selectCount('enrollments.id', 'enrolled_count')
+            ->join('enrollments', 'enrollments.course_id = courses.id', 'left')
+            ->whereNotIn('courses.id', $sub)
+            ->groupBy('courses.id');
+
+        if (!empty($yearLevel)) {
+            $builder->groupStart()
+                ->where('year_level', $yearLevel)
+                ->orWhere('year_level', null)
+            ->groupEnd();
+        }
 
         if ($searchTerm) {
             $builder->groupStart()

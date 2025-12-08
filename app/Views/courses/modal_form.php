@@ -31,6 +31,16 @@
           </div>
 
           <div class="mb-3">
+            <label class="form-label fw-semibold">Capacity (max students)</label>
+            <input type="number" min="1" name="capacity" class="form-control<?= isset($validation) && $validation->hasError('capacity') ? ' is-invalid' : '' ?>" value="<?= old('capacity') ?>" placeholder="e.g. 30">
+            <?php if (isset($validation) && $validation->hasError('capacity')): ?>
+              <div class="invalid-feedback d-block">
+                <?= esc($validation->getError('capacity')) ?>
+              </div>
+            <?php endif; ?>
+          </div>
+
+          <div class="mb-3">
             <label class="form-label fw-semibold">Description</label>
             <textarea name="description" class="form-control" rows="3" placeholder="Enter a short description of the course...">
 <?= old('description') ?></textarea>
@@ -48,6 +58,18 @@
                 <?= esc($validation->getError('semester')) ?>
               </div>
             <?php endif; ?>
+          </div>
+
+          <div class="mb-3">
+            <?php
+              $selected = old('year_level');
+              echo view('partials/year_level_select', [
+                  'selected'   => $selected,
+                  'validation' => $validation ?? null,
+                  'field'      => 'year_level',
+                  'label'      => 'Year Level',
+              ]);
+            ?>
           </div>
 
           <div class="mb-3">
