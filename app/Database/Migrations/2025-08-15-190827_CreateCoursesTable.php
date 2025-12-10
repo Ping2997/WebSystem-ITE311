@@ -66,7 +66,7 @@ class CreateCoursesTable extends Migration
             'status' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 20,
-                'default'    => 'draft',
+                'default'    => 'active',
             ],
             'created_at' => [
                 'type' => 'DATETIME',

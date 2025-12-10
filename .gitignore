@@ -1,0 +1,125 @@
+#--------------------------------------------------------------------
+# CodeIgniter 4 Environment & Config
+#--------------------------------------------------------------------
+
+# Environment file - contains sensitive data
+.env
+.env.*
+!.env.example
+
+#--------------------------------------------------------------------
+# CodeIgniter 4 Writable Directories
+#--------------------------------------------------------------------
+
+# Logs
+writable/logs/*
+!writable/logs/index.html
+!writable/logs/.gitkeep
+
+# Cache
+writable/cache/*
+!writable/cache/index.html
+!writable/cache/.gitkeep
+
+# Session
+writable/session/*
+!writable/session/.gitkeep
+
+# Debug Toolbar
+writable/debugbar/*
+!writable/debugbar/.gitkeep
+
+# Uploads (user-uploaded files)
+writable/uploads/*
+!writable/uploads/index.html
+!writable/uploads/.gitkeep
+
+#--------------------------------------------------------------------
+# Composer
+#--------------------------------------------------------------------
+
+/vendor/
+composer.phar
+composer.lock
+
+#--------------------------------------------------------------------
+# IDE & Editor Files
+#--------------------------------------------------------------------
+
+# PhpStorm
+.idea/
+
+# VSCode
+.vscode/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+#--------------------------------------------------------------------
+# OS Files
+#--------------------------------------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+#--------------------------------------------------------------------
+# Testing & Build
+#--------------------------------------------------------------------
+
+# PHPUnit
+build/
+.phpunit.cache/
+phpunit.xml
+
+# Coverage
+coverage/
+*.coverage
+
+#--------------------------------------------------------------------
+# Temporary Files
+#--------------------------------------------------------------------
+
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.swp
+*.swo
+
+#--------------------------------------------------------------------
+# Database
+#--------------------------------------------------------------------
+
+*.sql
+*.db
+*.sqlite
+*.sqlite3
+
+#--------------------------------------------------------------------
+# Node (if using npm/yarn)
+#--------------------------------------------------------------------
+
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+

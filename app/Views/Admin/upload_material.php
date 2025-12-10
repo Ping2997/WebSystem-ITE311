@@ -33,8 +33,8 @@
                     <?= csrf_field() ?>
                     <div class="mb-3">
                         <label for="material_file" class="form-label">Select File</label>
-                        <input type="file" name="material_file" id="material_file" class="form-control" accept=".pdf,.ppt,.pptx" required>
-                        <div class="form-text">Allowed types: PDF, PPT, PPTX. Max size: 10 MB.</div>
+                        <input type="file" name="material_file" id="material_file" class="form-control" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png" required>
+                        <div class="form-text">Allowed types: PDF, PPT.</div>
                     </div>
                     <button type="submit" class="btn btn-green">
                         <i class="fa fa-cloud-upload-alt me-1"></i> Upload

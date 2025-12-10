@@ -27,12 +27,32 @@
               <label class="form-label fw-semibold">Instructor</label>
               <select name="instructor_id" class="form-select<?= isset($validation) && $validation->hasError('instructor_id') ? ' is-invalid' : '' ?>" required>
                 <option value="" disabled <?= old('instructor_id') ? '' : 'selected' ?>>Select teacher</option>
-                <?php if (!empty($teachers ?? [])): ?>
+                <?php
+                  $db = db_connect();
+                  $teachers = $db->table('users')
+                      ->select('id, username, first_name, last_name, email, department')
+                      ->where('role', 'teacher')
+                      ->where('status', 'active')
+                      ->orderBy('username', 'ASC')
+                      ->get()
+                      ->getResultArray();
+                  $selectedInstructor = old('instructor_id');
+                ?>
+                <?php if (!empty($teachers)): ?>
                   <?php foreach ($teachers as $t): ?>
-                    <option value="<?= (int) $t['id'] ?>" <?= (string) old('instructor_id') === (string) $t['id'] ? 'selected' : '' ?>>
-                      <?= esc($t['username']) ?><?= !empty($t['department']) ? ' - ' . esc($t['department']) : '' ?>
+                    <?php
+                      $teacherId = (int) $t['id'];
+                      $teacherName = !empty($t['first_name']) || !empty($t['last_name']) 
+                          ? trim(($t['first_name'] ?? '') . ' ' . ($t['last_name'] ?? ''))
+                          : $t['username'];
+                      $isSelected = (string) $selectedInstructor === (string) $teacherId;
+                    ?>
+                    <option value="<?= $teacherId ?>" <?= $isSelected ? 'selected' : '' ?>>
+                      <?= esc($teacherName) ?> (<?= esc($t['username']) ?>)<?= !empty($t['department']) ? ' - ' . esc($t['department']) : '' ?>
                     </option>
                   <?php endforeach; ?>
+                <?php else: ?>
+                  <option value="" disabled>No teachers available</option>
                 <?php endif; ?>
               </select>
               <?php if (isset($validation) && $validation->hasError('instructor_id')): ?>

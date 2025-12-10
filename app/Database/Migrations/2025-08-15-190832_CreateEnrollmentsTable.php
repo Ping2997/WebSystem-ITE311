@@ -29,6 +29,11 @@ class CreateEnrollmentsTable extends Migration
                 'type' => 'DATETIME',
                 'null' => false,
             ],
+            'approval_status' => [
+                'type' => 'ENUM',
+                'constraint' => ['pending', 'approved', 'rejected'],
+                'default' => 'pending',
+            ],
         ]);
         
         $this->forge->addKey('id', true);

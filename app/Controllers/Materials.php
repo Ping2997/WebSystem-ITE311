@@ -93,12 +93,17 @@ class Materials extends Controller
             return redirect()->back()->with('error', 'File not found on disk.');
         }
 
-        // Students/teachers must be enrolled in the course
+        // Students must be approved for the course
         $enrollModel = new EnrollmentModel();
         $userId = (int) (session('userID') ?? 0);
         $courseId = (int) ($material['course_id'] ?? 0);
-        $enrolled = $enrollModel->isAlreadyEnrolled($userId, $courseId);
-        if (!$enrolled) {
+        $isApproved = $enrollModel->isApproved($userId, $courseId);
+        if (!$isApproved) {
+            // Check if enrollment exists but is pending
+            $hasEnrollment = $enrollModel->hasEnrollment($userId, $courseId);
+            if ($hasEnrollment) {
+                return redirect()->back()->with('error', 'Access denied: Your enrollment request is pending teacher approval.');
+            }
             return redirect()->back()->with('error', 'Access denied: not enrolled in this course.');
         }
 
@@ -132,7 +137,13 @@ class Materials extends Controller
         if (!in_array(session('role'), ['admin','teacher'], true)) {
             $userId = (int) (session('userID') ?? 0);
             $enrollModel = new EnrollmentModel();
-            if (!$enrollModel->isAlreadyEnrolled($userId, $courseId)) {
+            $isApproved = $enrollModel->isApproved($userId, $courseId);
+            if (!$isApproved) {
+                // Check if enrollment exists but is pending
+                $hasEnrollment = $enrollModel->hasEnrollment($userId, $courseId);
+                if ($hasEnrollment) {
+                    return redirect()->back()->with('error', 'Access denied: Your enrollment request is pending teacher approval.');
+                }
                 return redirect()->back()->with('error', 'Access denied: not enrolled in this course.');
             }
         }
@@ -172,7 +183,7 @@ class Materials extends Controller
         $validation->setRules([
             $inputName => [
                 'label' => 'Material File',
-                'rules' => 'uploaded['.$inputName.']|max_size['.$inputName.',10240]|ext_in['.$inputName.',pdf,ppt,pptx]'
+                'rules' => 'uploaded['.$inputName.']|max_size['.$inputName.',10240]|ext_in['.$inputName.',pdf,doc,docx,ppt,pptx,txt,jpg,jpeg,png]'
             ]
         ]);
 
@@ -203,28 +214,36 @@ class Materials extends Controller
                 ];
 
                 if ($this->materialsModel->insertMaterial($data)) {
-                    // Notify all enrolled students that new material was uploaded
+                    // Notify all relevant roles about new material upload
                     try {
                         $enrollModel = new EnrollmentModel();
                         $notifModel  = new NotificationModel();
+                        $db = db_connect();
 
-                        // Get course title for friendlier message
-                        $courseRow = db_connect()->table('courses')
-                            ->select('title')
-                            ->where('id', (int) $course_id)
+                        // Get course info
+                        $courseRow = $db->table('courses')
+                            ->select('courses.title, courses.instructor_id')
+                            ->where('courses.id', (int) $course_id)
                             ->get()
                             ->getRowArray();
                         $courseTitle = $courseRow['title'] ?? 'a course';
+                        $instructorId = isset($courseRow['instructor_id']) ? (int) $courseRow['instructor_id'] : null;
 
-                        $enrollments = $enrollModel->where('course_id', (int) $course_id)->findAll();
+                        // Notify approved students
+                        $enrollments = $enrollModel->where('course_id', (int) $course_id)
+                            ->where('approval_status', 'approved')
+                            ->findAll();
                         foreach ($enrollments as $en) {
-                            $notifModel->insert([
-                                'user_id'    => (int) $en['user_id'],
-                                'message'    => 'New material has been uploaded for ' . $courseTitle,
-                                'is_read'    => 0,
-                                'created_at' => date('Y-m-d H:i:s'),
-                            ]);
+                            $notifModel->sendNotification((int) $en['user_id'], 'New material has been uploaded for ' . $courseTitle);
                         }
+
+                        // Notify teacher (course instructor)
+                        if ($instructorId) {
+                            $notifModel->sendNotification($instructorId, 'New material has been uploaded to your course: ' . $courseTitle);
+                        }
+
+                        // Notify all admins
+                        $notifModel->sendNotificationToRole('admin', 'New material has been uploaded for course: ' . $courseTitle);
                     } catch (\Throwable $e) {
                         // Do not block upload on notification failure; optionally log
                         log_message('error', 'Material upload notification failed: ' . $e->getMessage());

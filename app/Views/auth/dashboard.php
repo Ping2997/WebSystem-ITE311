@@ -11,9 +11,18 @@
 <body>
   <?= $this->include('tempates/header') ?>
 
-  <div class="container my-4">
+  <div class="container-fluid px-5 py-5">
     <?php if(session()->getFlashdata('success')): ?>
-      <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
+      <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <i class="fas fa-check-circle me-2"></i><?= session()->getFlashdata('success') ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <?php endif; ?>
+    <?php if(session()->getFlashdata('error')): ?>
+      <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i><?= session()->getFlashdata('error') ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
     <?php endif; ?>
 
     <?php
@@ -23,10 +32,27 @@
 
       switch ($role) {
         case 'admin':
-          echo view('Admin/admin', ['name' => $name, 'courses' => $courses ?? []]);
+          echo view('Admin/admin', [
+            'name' => $name, 
+            'courses' => $courses ?? [],
+            'totalUsers' => $totalUsers ?? 0,
+            'totalCourses' => $totalCourses ?? 0,
+            'activeStudents' => $activeStudents ?? 0,
+            'totalEnrollments' => $totalEnrollments ?? 0,
+            'allUsers' => $allUsers ?? [],
+            'allCourses' => $allCourses ?? [],
+            'allEnrollments' => $allEnrollments ?? [],
+            'archivedUsers' => $archivedUsers ?? [],
+            'archivedCourses' => $archivedCourses ?? [],
+            'archivedEnrollments' => $archivedEnrollments ?? []
+          ]);
           break;
         case 'teacher':
-          echo view('tempates/teacher', ['name' => $name, 'courses' => $courses ?? []]);
+          echo view('tempates/teacher', [
+            'name' => $name, 
+            'courses' => $courses ?? [],
+            'pendingEnrollments' => $pendingEnrollments ?? []
+          ]);
           break;
         case 'student':
           echo view('Student/student', [

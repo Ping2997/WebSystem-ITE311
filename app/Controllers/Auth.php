@@ -242,20 +242,73 @@ class Auth extends BaseController
                 ->get()
                 ->getResultArray();
 
-            // For admin, also provide list of teachers for assigning courses
-            if ($role === 'admin') {
-                $data['teachers'] = $db->table('users')
-                    ->select('id, username, department')
-                    ->where('role', 'teacher')
-                    ->where('status', 'active')
-                    ->orderBy('username', 'ASC')
-                    ->get()
-                    ->getResultArray();
-            }
-
             // Simple counts for dashboard cards (admins see global, teachers see limited view still based on whole tables)
             $data['totalUsers']   = (int) $db->table('users')->countAllResults();
             $data['totalCourses'] = (int) $db->table('courses')->countAllResults();
+            
+            // For admins: Calculate active students and total enrollments, and fetch all data
+            if ($role === 'admin') {
+                // Fetch all users (excluding soft deleted)
+                $data['allUsers'] = $db->table('users')
+                    ->select('id, username, email, role, status, year_level, created_at')
+                    ->where('deleted_at IS NULL', null, false)
+                    ->orderBy('role', 'ASC')
+                    ->orderBy('username', 'ASC')
+                    ->get()
+                    ->getResultArray();
+                
+                // Fetch all courses with instructor info (excluding soft deleted)
+                $data['allCourses'] = $db->table('courses')
+                    ->select('courses.id, courses.title, courses.description, courses.status, courses.year_level, courses.capacity, courses.start_date, courses.end_date, users.username AS instructor_name')
+                    ->selectCount('enrollments.id', 'enrolled_count')
+                    ->join('users', 'users.id = courses.instructor_id', 'left')
+                    ->join('enrollments', 'enrollments.course_id = courses.id AND enrollments.approval_status = "approved"', 'left')
+                    ->where('courses.deleted_at IS NULL', null, false)
+                    ->groupBy('courses.id')
+                    ->orderBy('courses.title', 'ASC')
+                    ->get()
+                    ->getResultArray();
+                
+                // Fetch all enrollments with user and course info (excluding soft deleted)
+                $data['allEnrollments'] = $db->table('enrollments')
+                    ->select('enrollments.id, enrollments.enrollment_date, enrollments.approval_status, users.username AS student_username, users.email AS student_email, users.year_level AS student_year_level, courses.title AS course_title, courses.id AS course_id')
+                    ->join('users', 'users.id = enrollments.user_id')
+                    ->join('courses', 'courses.id = enrollments.course_id')
+                    ->where('enrollments.deleted_at IS NULL', null, false)
+                    ->orderBy('enrollments.enrollment_date', 'DESC')
+                    ->get()
+                    ->getResultArray();
+                
+                // Fetch archived items
+                $userModel = new \App\Models\UserModel();
+                $courseModel = new \App\Models\CourseModel();
+                $enrollmentModel = new \App\Models\EnrollmentModel();
+                
+                $data['archivedUsers'] = $userModel->getDeletedUsers();
+                $data['archivedCourses'] = $courseModel->getDeletedCourses();
+                $data['archivedEnrollments'] = $enrollmentModel->getDeletedEnrollments();
+                
+                // Calculate active students and total enrollments (excluding deleted)
+                $data['activeStudents'] = (int) $db->table('users')
+                    ->where('role', 'student')
+                    ->where('status', 'active')
+                    ->where('deleted_at IS NULL', null, false)
+                    ->countAllResults();
+                
+                $enrollModel = new \App\Models\EnrollmentModel();
+                $data['totalEnrollments'] = (int) $enrollModel->countAllResults();
+            } else {
+                $data['activeStudents'] = 0;
+                $data['totalEnrollments'] = 0;
+            }
+            
+            // For teachers: Get pending enrollment requests for their courses
+            if ($role === 'teacher' && $userId > 0) {
+                $enrollModel = new \App\Models\EnrollmentModel();
+                $data['pendingEnrollments'] = $enrollModel->getTeacherPendingEnrollments($userId);
+            } else {
+                $data['pendingEnrollments'] = [];
+            }
         }
 
         return view('auth/dashboard', $data);

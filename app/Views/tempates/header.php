@@ -1,4 +1,4 @@
-    <nav class="navbar navbar-expand-lg navbar-dark theme-navbar" style="background-color:#3a7d6d;">
+    <nav class="navbar navbar-expand-lg navbar-dark theme-navbar" style="background: linear-gradient(135deg, #6b9f7a 0%, #5a8a68 100%);">
         <div class="container">
             <a class="navbar-brand" href="<?= base_url() ?>">
                 <i class="fas fa-graduation-cap me-2"></i>ITE311 LMS
@@ -45,7 +45,7 @@
                         <!-- User Dropdown -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user me-1"></i><?= session()->get('first_name') ?>
+                                <i class="fas fa-user me-1"></i><?= session()->get('first_name') ?: session()->get('name') ?: session()->get('username') ?>
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="<?= base_url('dashboard') ?>"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
@@ -70,33 +70,45 @@
         </div>
     </nav>
 
+    <style>
+        .notif-item { border: 1px solid #e6ecea; border-left: 4px solid #6b9f7a; background: #f8fbfa; padding: .5rem .75rem; border-radius: .35rem; }
+        .notif-time { color: #6c757d; }
+        .notif-actions .btn { border-color: #6b9f7a; color: #6b9f7a; }
+        .notif-actions .btn:hover { background: #6b9f7a; color: #fff; }
+    </style>
+    
     <!-- jQuery (needed for AJAX notifications) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <style>
-        .notif-item { border: 1px solid #e6ecea; border-left: 4px solid #3a7d6d; background: #f8fbfa; padding: .5rem .75rem; border-radius: .35rem; }
-        .notif-time { color: #6c757d; }
-        .notif-actions .btn { border-color: #3a7d6d; color: #3a7d6d; }
-        .notif-actions .btn:hover { background: #3a7d6d; color: #fff; }
-    </style>
-
     <script>
         (function() {
+            // Wait for jQuery to be available
+            if (typeof jQuery === 'undefined') {
+                console.error('jQuery is not loaded. Notifications will not work.');
+                return;
+            }
+            
+            var $ = jQuery;
+            
             function renderNotifications(data) {
                 var count = data.count || 0;
                 var list = data.notifications || [];
 
                 var $badge = $('#notificationBadge');
-                if (count > 0) { $badge.text(count).removeClass('d-none'); } else { $badge.addClass('d-none').text('0'); }
+                if (count > 0) { 
+                    $badge.text(count).removeClass('d-none'); 
+                } else { 
+                    $badge.addClass('d-none').text('0'); 
+                }
 
                 var $list = $('#notificationsList');
                 $list.empty();
                 if (!list.length) {
-                    $list.append('<div class="notif-item d-flex align-items-center"><i class="fas fa-check-circle me-2" style="color:#3a7d6d"></i><div><div class="fw-semibold">You\'re all caught up</div><div class="small notif-time">No new notifications</div></div></div>');
+                    $list.append('<div class="notif-item d-flex align-items-center"><i class="fas fa-check-circle me-2" style="color:#6b9f7a"></i><div><div class="fw-semibold">You\'re all caught up</div><div class="small notif-time">No new notifications</div></div></div>');
                     return;
                 }
 
                 list.forEach(function(n) {
-                    var safeMsg = $('<div>').text(n.message).html();
+                    var safeMsg = $('<div>').text(n.message || '').html();
                     var createdAt = n.created_at ? new Date(n.created_at).toLocaleString() : '';
                     var item = [
                         '<div class="notif-item">',
@@ -105,7 +117,7 @@
                         '    <div class="small notif-time">' + createdAt + '</div>',
                         '  </div>',
                         '  <div class="notif-actions mt-2 text-center">',
-                        '    <button type="button" class="btn btn-sm btn-outline-success mark-read-btn" data-id="' + n.id + '">Mark as Read</button>',
+                        '    <button type="button" class="btn btn-sm btn-outline-success mark-read-btn" data-id="' + (n.id || '') + '">Mark as Read</button>',
                         '  </div>',
                         '</div>'
                     ].join('');
@@ -115,21 +127,69 @@
 
             function fetchNotifications() {
                 var url = '<?= base_url('notifications') ?>' + '?_=' + Date.now();
-                $.get(url).done(function(res){ renderNotifications(res); });
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    dataType: 'json',
+                    cache: false
+                })
+                .done(function(res){
+                    if (res && typeof res === 'object') {
+                        // Log debug info if available (for troubleshooting)
+                        if (res.debug) {
+                            console.log('Notification debug:', res.debug);
+                        }
+                        renderNotifications(res);
+                    } else {
+                        console.error('Invalid notification response:', res);
+                    }
+                })
+                .fail(function(xhr, status, error){
+                    console.error('Failed to fetch notifications:', status, error);
+                    if (xhr.responseText) {
+                        console.error('Response:', xhr.responseText);
+                        try {
+                            var errorData = JSON.parse(xhr.responseText);
+                            if (errorData.debug) {
+                                console.error('Debug info:', errorData.debug);
+                            }
+                        } catch(e) {
+                            // Not JSON, ignore
+                        }
+                    }
+                });
             }
 
             function markAsRead(id) {
+                if (!id) return;
                 var url = '<?= base_url('notifications/mark_read') ?>/' + id + '?_=' + Date.now();
-                return $.post(url).done(function(res){ if(res && res.status === 'success'){ fetchNotifications(); } });
+                return $.ajax({
+                    url: url,
+                    method: 'POST',
+                    dataType: 'json'
+                }).done(function(res){ 
+                    if(res && res.status === 'success'){ 
+                        fetchNotifications(); 
+                    }
+                });
             }
 
             $(document).ready(function() {
+                // Initial fetch
                 fetchNotifications();
+                // Poll every 60 seconds
                 setInterval(fetchNotifications, 60000);
 
-                $(document).on('click', '.mark-read-btn', function(e){ e.preventDefault(); var id=$(this).data('id'); if(id){ markAsRead(id); }});
+                // Handle mark as read
+                $(document).on('click', '.mark-read-btn', function(e){ 
+                    e.preventDefault(); 
+                    var id = $(this).data('id'); 
+                    if(id){ 
+                        markAsRead(id); 
+                    }
+                });
 
-                // Also fetch when opening the dropdown to ensure latest
+                // Fetch when opening the dropdown
                 $(document).on('show.bs.dropdown', '#notificationsDropdown', function () {
                     var $list = $('#notificationsList');
                     $list.html('<div class="text-center py-2"><div class="spinner-border spinner-border-sm" role="status"></div><span class="ms-2 small">Loading...</span></div>');

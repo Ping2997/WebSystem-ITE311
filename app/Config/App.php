@@ -143,7 +143,7 @@ class App extends BaseConfig
      * This determines which character set is used by default in various methods
      * that require a character set to be provided.
      *
-     * @see http://php.net/htmlspecialchars for a list of supported charsets.
+     * @see  for a list of supported charsets.
      */
     public string $charset = 'UTF-8';
 

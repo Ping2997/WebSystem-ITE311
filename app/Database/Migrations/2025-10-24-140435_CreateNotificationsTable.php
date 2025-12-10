@@ -17,6 +17,7 @@ class CreateNotificationsTable extends Migration
             'user_id' => [
                 'type'       => 'INT',
                 'constraint' => 11,
+                'unsigned'   => true,
             ],
             'message' => [
                 'type'       => 'VARCHAR',
@@ -33,6 +34,7 @@ class CreateNotificationsTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
+        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('notifications');
     }
 

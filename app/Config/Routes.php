@@ -22,6 +22,8 @@ $routes->get('/dashboard', 'Auth::dashboard');
 
 // Course enrollment routes
 $routes->post('/course/enroll', 'Course::enroll');
+$routes->post('/course/approve-enrollment/(:num)', 'Course::approveEnrollment/$1');
+$routes->post('/course/reject-enrollment/(:num)', 'Course::rejectEnrollment/$1');
 
 // Course search routes
 $routes->get('/courses/search', 'Course::search');
@@ -51,3 +53,14 @@ $routes->post('/students/store', 'ManageStudents::store');
 
 // Teacher management route (admin only)
 $routes->post('/teachers/store', 'ManageTeachers::store');
+
+// Admin CRUD routes
+$routes->post('/admin/users/update', 'Admin::updateUser');
+$routes->post('/admin/users/delete/(:num)', 'Admin::deleteUser/$1');
+$routes->post('/admin/users/restore/(:num)', 'Admin::restoreUser/$1');
+$routes->post('/admin/courses/update', 'Admin::updateCourse');
+$routes->post('/admin/courses/delete/(:num)', 'Admin::deleteCourse/$1');
+$routes->post('/admin/courses/restore/(:num)', 'Admin::restoreCourse/$1');
+$routes->post('/admin/enrollments/delete/(:num)', 'Admin::deleteEnrollment/$1');
+$routes->post('/admin/enrollments/restore/(:num)', 'Admin::restoreEnrollment/$1');
+$routes->post('/admin/cleanup', 'Admin::cleanupOldDeletes');

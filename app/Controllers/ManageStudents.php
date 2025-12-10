@@ -3,13 +3,13 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
-use App\Models\EnrollmentModel;
+use App\Models\NotificationModel;
 
 class ManageStudents extends BaseController
 {
     public function store()
     {
-        if (!session()->get('isLoggedIn') || !in_array(session('role'), ['admin', 'teacher'], true)) {
+        if (!session()->get('isLoggedIn') || session('role') !== 'admin') {
             session()->setFlashdata('error', 'Unauthorized access.');
             return redirect()->to(base_url('login'));
         }
@@ -38,46 +38,49 @@ class ManageStudents extends BaseController
         ];
 
         if ($userModel->insert($data)) {
-            // Auto-enroll this student into all existing courses for their year level
-            $studentId = (int) $userModel->getInsertID();
-            $yearLevel = (string) $data['year_level'];
-
-            if ($studentId > 0 && $yearLevel !== '') {
+            $studentId = $userModel->getInsertID();
+            $studentUsername = $data['username'] ?? 'New student';
+            
+            // Send notifications when admin/teacher adds a student
+            try {
+                $notifModel = new NotificationModel();
                 $db = db_connect();
-                $enrollmentModel = new EnrollmentModel();
-
-                $courses = $db->table('courses')
-                    ->select('id, capacity')
-                    ->where('year_level', $yearLevel)
-                    ->get()
-                    ->getResultArray();
-
-                foreach ($courses as $course) {
-                    $courseId = (int) $course['id'];
-                    $capacity = isset($course['capacity']) ? (int) $course['capacity'] : 0;
-
-                    // Respect capacity if set
-                    if ($capacity > 0) {
-                        $currentCount = $enrollmentModel->where('course_id', $courseId)->countAllResults();
-                        if ($currentCount >= $capacity) {
-                            continue; // course is full
-                        }
+                $currentUserId = (int) (session('userID') ?? 0);
+                
+                // Notify the newly created student
+                $notifModel->sendNotification($studentId, 'Welcome! Your account has been created. You can now log in and enroll in courses.');
+                
+                // Notify teachers who have courses matching the student's year level
+                $studentYearLevel = $data['year_level'] ?? null;
+                if ($studentYearLevel) {
+                    $teachers = $db->table('courses')
+                        ->select('courses.instructor_id, users.username as teacher_name')
+                        ->join('users', 'users.id = courses.instructor_id', 'inner')
+                        ->where('courses.year_level', $studentYearLevel)
+                        ->where('courses.status', 'active')
+                        ->where('users.role', 'teacher')
+                        ->where('users.status', 'active')
+                        ->groupBy('courses.instructor_id')
+                        ->get()
+                        ->getResultArray();
+                    
+                    foreach ($teachers as $teacher) {
+                        $notifModel->sendNotification(
+                            (int) $teacher['instructor_id'],
+                            'A new ' . $studentYearLevel . ' student (' . $studentUsername . ') has been added. You can review and approve them for your courses.'
+                        );
                     }
-
-                    // Skip if already enrolled (safety)
-                    if ($enrollmentModel->isAlreadyEnrolled($studentId, $courseId)) {
-                        continue;
-                    }
-
-                    $enrollmentModel->enrollUser([
-                        'user_id'         => $studentId,
-                        'course_id'       => $courseId,
-                        'enrollment_date' => date('Y-m-d H:i:s'),
-                    ]);
                 }
+                
+                // Notify admin about the student creation
+                if ($currentUserId > 0) {
+                    $notifModel->sendNotification($currentUserId, 'Student "' . $studentUsername . '" (' . ($studentYearLevel ?? 'N/A') . ') has been successfully created.');
+                }
+            } catch (\Throwable $e) {
+                log_message('error', 'Student creation notification failed: ' . $e->getMessage());
             }
-
-            session()->setFlashdata('success', 'Student created successfully and auto-enrolled to matching courses.');
+            
+            session()->setFlashdata('success', 'Student created successfully.');
         } else {
             session()->setFlashdata('error', 'Failed to create student.');
         }

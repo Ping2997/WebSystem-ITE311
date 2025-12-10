@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\NotificationModel;
 
 class ManageTeachers extends BaseController
 {
@@ -40,6 +41,29 @@ class ManageTeachers extends BaseController
         ];
 
         if ($userModel->insert($data)) {
+            $teacherId = $userModel->getInsertID();
+            $teacherUsername = $data['username'] ?? 'New teacher';
+            $teacherName = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''));
+            if (empty($teacherName)) {
+                $teacherName = $teacherUsername;
+            }
+            
+            // Send notifications
+            try {
+                $notifModel = new NotificationModel();
+                $currentUserId = (int) (session('userID') ?? 0);
+                
+                // Notify the newly created teacher
+                $notifModel->sendNotification($teacherId, 'Welcome! Your teacher account has been created. You can now log in and manage courses.');
+                
+                // Notify admin about the teacher creation
+                if ($currentUserId > 0) {
+                    $notifModel->sendNotification($currentUserId, 'Teacher "' . $teacherName . '" (' . $teacherUsername . ') has been successfully created.');
+                }
+            } catch (\Throwable $e) {
+                log_message('error', 'Teacher creation notification failed: ' . $e->getMessage());
+            }
+            
             session()->setFlashdata('success', 'Teacher created successfully.');
         } else {
             session()->setFlashdata('error', 'Failed to create teacher.');
