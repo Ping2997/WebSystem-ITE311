@@ -242,6 +242,17 @@ class Auth extends BaseController
                 ->get()
                 ->getResultArray();
 
+            // For admin, also provide list of teachers for assigning courses
+            if ($role === 'admin') {
+                $data['teachers'] = $db->table('users')
+                    ->select('id, username, department')
+                    ->where('role', 'teacher')
+                    ->where('status', 'active')
+                    ->orderBy('username', 'ASC')
+                    ->get()
+                    ->getResultArray();
+            }
+
             // Simple counts for dashboard cards (admins see global, teachers see limited view still based on whole tables)
             $data['totalUsers']   = (int) $db->table('users')->countAllResults();
             $data['totalCourses'] = (int) $db->table('courses')->countAllResults();

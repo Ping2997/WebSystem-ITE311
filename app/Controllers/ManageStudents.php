@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\EnrollmentModel;
 
 class ManageStudents extends BaseController
 {
@@ -37,7 +38,46 @@ class ManageStudents extends BaseController
         ];
 
         if ($userModel->insert($data)) {
-            session()->setFlashdata('success', 'Student created successfully.');
+            // Auto-enroll this student into all existing courses for their year level
+            $studentId = (int) $userModel->getInsertID();
+            $yearLevel = (string) $data['year_level'];
+
+            if ($studentId > 0 && $yearLevel !== '') {
+                $db = db_connect();
+                $enrollmentModel = new EnrollmentModel();
+
+                $courses = $db->table('courses')
+                    ->select('id, capacity')
+                    ->where('year_level', $yearLevel)
+                    ->get()
+                    ->getResultArray();
+
+                foreach ($courses as $course) {
+                    $courseId = (int) $course['id'];
+                    $capacity = isset($course['capacity']) ? (int) $course['capacity'] : 0;
+
+                    // Respect capacity if set
+                    if ($capacity > 0) {
+                        $currentCount = $enrollmentModel->where('course_id', $courseId)->countAllResults();
+                        if ($currentCount >= $capacity) {
+                            continue; // course is full
+                        }
+                    }
+
+                    // Skip if already enrolled (safety)
+                    if ($enrollmentModel->isAlreadyEnrolled($studentId, $courseId)) {
+                        continue;
+                    }
+
+                    $enrollmentModel->enrollUser([
+                        'user_id'         => $studentId,
+                        'course_id'       => $courseId,
+                        'enrollment_date' => date('Y-m-d H:i:s'),
+                    ]);
+                }
+            }
+
+            session()->setFlashdata('success', 'Student created successfully and auto-enrolled to matching courses.');
         } else {
             session()->setFlashdata('error', 'Failed to create student.');
         }

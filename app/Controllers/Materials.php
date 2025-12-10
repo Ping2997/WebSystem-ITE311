@@ -172,7 +172,7 @@ class Materials extends Controller
         $validation->setRules([
             $inputName => [
                 'label' => 'Material File',
-                'rules' => 'uploaded['.$inputName.']|max_size['.$inputName.',10240]|ext_in['.$inputName.',pdf,doc,docx,ppt,pptx,txt,jpg,jpeg,png]'
+                'rules' => 'uploaded['.$inputName.']|max_size['.$inputName.',10240]|ext_in['.$inputName.',pdf,ppt,pptx]'
             ]
         ]);
 

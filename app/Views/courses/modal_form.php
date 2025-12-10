@@ -7,6 +7,8 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        <?php $isAdmin = session('role') === 'admin'; ?>
+
         <?php if (session()->getFlashdata('error')): ?>
           <div class="alert alert-danger">
             <?= esc(session()->getFlashdata('error')) ?>
@@ -20,6 +22,28 @@
         <?php endif; ?>
 
         <form action="<?= base_url('courses/store') ?>" method="post">
+          <?php if ($isAdmin): ?>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Instructor</label>
+              <select name="instructor_id" class="form-select<?= isset($validation) && $validation->hasError('instructor_id') ? ' is-invalid' : '' ?>" required>
+                <option value="" disabled <?= old('instructor_id') ? '' : 'selected' ?>>Select teacher</option>
+                <?php if (!empty($teachers ?? [])): ?>
+                  <?php foreach ($teachers as $t): ?>
+                    <option value="<?= (int) $t['id'] ?>" <?= (string) old('instructor_id') === (string) $t['id'] ? 'selected' : '' ?>>
+                      <?= esc($t['username']) ?><?= !empty($t['department']) ? ' - ' . esc($t['department']) : '' ?>
+                    </option>
+                  <?php endforeach; ?>
+                <?php endif; ?>
+              </select>
+              <?php if (isset($validation) && $validation->hasError('instructor_id')): ?>
+                <div class="invalid-feedback d-block">
+                  <?= esc($validation->getError('instructor_id')) ?>
+                </div>
+              <?php endif; ?>
+            </div>
+          <?php else: ?>
+            <input type="hidden" name="instructor_id" value="<?= (int) (session('userID') ?? 0) ?>">
+          <?php endif; ?>
           <div class="mb-3">
             <label class="form-label fw-semibold">Course Title</label>
             <input type="text" name="title" class="form-control<?= isset($validation) && $validation->hasError('title') ? ' is-invalid' : '' ?>" value="<?= old('title') ?>" required>

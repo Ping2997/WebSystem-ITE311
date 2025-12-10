@@ -29,16 +29,17 @@ class CourseModel extends Model
         $yearLevel = $userRow['year_level'] ?? null;
 
         $builder = $db->table($this->table)
-            ->select('courses.id, courses.title, courses.description, courses.start_date, courses.end_date, courses.start_time, courses.end_time, courses.capacity')
+            ->select('courses.id, courses.title, courses.description, courses.start_date, courses.end_date, courses.start_time, courses.end_time, courses.capacity, users.username AS instructor_name')
             ->selectCount('enrollments.id', 'enrolled_count')
             ->join('enrollments', 'enrollments.course_id = courses.id', 'left')
+            ->join('users', 'users.id = courses.instructor_id', 'left')
             ->whereNotIn('courses.id', $sub)
             ->groupBy('courses.id');
 
         if (!empty($yearLevel)) {
             $builder->groupStart()
-                ->where('year_level', $yearLevel)
-                ->orWhere('year_level', null)
+                ->where('courses.year_level', $yearLevel)
+                ->orWhere('courses.year_level', null)
             ->groupEnd();
         }
 

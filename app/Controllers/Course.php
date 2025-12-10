@@ -191,12 +191,21 @@ class Course extends Controller
             'end_time' => 'permit_empty',
         ];
 
+        // Admin must choose which teacher will handle the course
+        if ($role === 'admin') {
+            $rules['instructor_id'] = 'required|integer';
+        }
+
         if (! $validation->setRules($rules)->withRequest($this->request)->run()) {
             $session->setFlashdata('error', 'Please fix the errors in the form.');
             return redirect()->back()->withInput();
         }
 
+        // Instructor ID: for teachers use themselves, for admin use the selected teacher
         $instructorId = (int) ($session->get('userID') ?? 0);
+        if ($role === 'admin') {
+            $instructorId = (int) $this->request->getPost('instructor_id');
+        }
 
         $data = [
             'title'        => $this->request->getPost('title'),
@@ -213,9 +222,55 @@ class Course extends Controller
             'status'       => 'active',
         ];
 
+        // Insert course
         $courseModel->insert($data);
+        $courseId = (int) $courseModel->getInsertID();
 
-        $session->setFlashdata('success', 'Course created successfully.');
+        // Auto-enroll all students for this year level (if any)
+        if ($courseId > 0) {
+            $db = db_connect();
+            $enrollmentModel = new EnrollmentModel();
+
+            // Determine course capacity (0 or null means unlimited)
+            $capacity = 0;
+            if (!empty($data['capacity'])) {
+                $capacity = (int) $data['capacity'];
+            }
+
+            // Fetch all students with matching year_level
+            $builder = $db->table('users')
+                ->select('id')
+                ->where('role', 'student')
+                ->where('status', 'active')
+                ->where('year_level', $data['year_level']);
+
+            $students = $builder->get()->getResultArray();
+
+            foreach ($students as $stu) {
+                $userId = (int) $stu['id'];
+
+                // Respect capacity if set
+                if ($capacity > 0) {
+                    $currentCount = $enrollmentModel->where('course_id', $courseId)->countAllResults();
+                    if ($currentCount >= $capacity) {
+                        break; // course is full
+                    }
+                }
+
+                // Skip if already enrolled (safety for re-runs)
+                if ($enrollmentModel->isAlreadyEnrolled($userId, $courseId)) {
+                    continue;
+                }
+
+                $enrollmentModel->enrollUser([
+                    'user_id'         => $userId,
+                    'course_id'       => $courseId,
+                    'enrollment_date' => date('Y-m-d H:i:s'),
+                ]);
+            }
+        }
+
+        $session->setFlashdata('success', 'Course created successfully and students for that year have been auto-enrolled.');
         return redirect()->to(base_url('dashboard'));
     }
 }

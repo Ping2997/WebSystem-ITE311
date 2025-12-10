@@ -46,8 +46,9 @@ class EnrollmentModel extends Model
      */
     public function getUserEnrollmentsDetailed(int $user_id): array
     {
-        return $this->select('courses.id, courses.title, courses.description, courses.semester, courses.start_date, courses.end_date, courses.start_time, courses.end_time')
+        return $this->select('courses.id, courses.title, courses.description, courses.semester, courses.start_date, courses.end_date, courses.start_time, courses.end_time, users.username AS instructor_name')
             ->join('courses', 'courses.id = enrollments.course_id')
+            ->join('users', 'users.id = courses.instructor_id', 'left')
             ->where('enrollments.user_id', $user_id)
             ->findAll();
     }
@@ -70,17 +71,18 @@ class EnrollmentModel extends Model
         $yearLevel = $userRow['year_level'] ?? null;
 
         $builder = $db->table('courses')
-            ->select('courses.id, courses.title, courses.description, courses.start_date, courses.end_date, courses.start_time, courses.end_time, courses.capacity')
+            ->select('courses.id, courses.title, courses.description, courses.start_date, courses.end_date, courses.start_time, courses.end_time, courses.capacity, users.username AS instructor_name')
             ->selectCount('enrollments.id', 'enrolled_count')
             ->join('enrollments', 'enrollments.course_id = courses.id', 'left')
+            ->join('users', 'users.id = courses.instructor_id', 'left')
             ->whereNotIn('courses.id', $sub)
             ->groupBy('courses.id');
 
         // If student has a year level, only show matching courses (or those with no year set)
         if (!empty($yearLevel)) {
             $builder->groupStart()
-                ->where('year_level', $yearLevel)
-                ->orWhere('year_level', null)
+                ->where('courses.year_level', $yearLevel)
+                ->orWhere('courses.year_level', null)
             ->groupEnd();
         }
 
